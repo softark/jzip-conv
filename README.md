@@ -66,7 +66,7 @@ MySQL のインポート用 SQL ファイルを生成するプログラム。
 プログラムの使い方 (1) 初期データ作成
 -----------------------------------
 
-1. データベースの初期化
+1. データベースの初期化  
     sqls/zip_data_init.sql を DB にインポートして、空っぽのテーブルを作成する
 2. 郵便番号データ
     1. 最新の ken_all.lzh または ken_all.zip を入手する
@@ -76,8 +76,8 @@ MySQL のインポート用 SQL ファイルを生成するプログラム。
     2. JIGYOSYO.CSV を解凍して、data/YYMM ディレクトリに配置する
 4. data/YYMM ディレクトリを指定して(*1)、programs/main.php を実行する
 5. outputs/masters/YYMM ディレクトリに生成された全ての SQL を DB にインポートする
-6. フラグの更新(*2)
-   sqls/zip_data_flag_update.sql を DB にインポートして、フラグを更新する
+6. フラグの更新(*2)  
+    sqls/zip_data_flag_update.sql を DB にインポートして、フラグを更新する
 
 + (*1) 「data/YYMM ディレクトリの指定」は、programs/main.php を直接書き換えて行う(手抜きでごめん)。
 + (*2) 「フラグの更新」は、データをインポートした場合に、必ず実行する必要がある。
@@ -99,8 +99,8 @@ MySQL のインポート用 SQL ファイルを生成するプログラム。
     2. JADDYYMM.CSV を解凍して、data/YYMM ディレクトリに配置する
 5. data/YYMM ディレクトリを指定して(*1)、programs/main.php を実行する
 6. outputs/updates ディレクトリに生成された updates-YYMM.sql を DB にインポートする
-7. フラグの更新(*2)
-   sqls/zip_data_flag_update.sql を DB にインポートして、フラグを更新する
+7. フラグの更新(*2)  
+    sqls/zip_data_flag_update.sql を DB にインポートして、フラグを更新する
 
 + (*1) 「data/YYMM ディレクトリの指定」は、programs/main.php を直接書き換えて行う(手抜きでごめん)。
 + (*2) 「フラグの更新」は、データをインポートした場合に、必ず実行する必要がある。
