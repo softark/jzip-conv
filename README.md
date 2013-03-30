@@ -98,7 +98,7 @@ MySQL のインポート用 SQL ファイルを生成するプログラム。
     1. jaddYYMM.lzh または jaddYYMM.zip を入手する
     2. JADDYYMM.CSV を解凍して、data/YYMM ディレクトリに配置する
 5. data/YYMM ディレクトリを指定して(*1)、programs/main.php を実行する
-6. outputs/updates ディレクトリに生成された updates-YYMM.sql を DB にインポートする
+6. outputs/updates ディレクトリに生成された update_YYMM.sql を DB にインポートする
 7. フラグの更新(*2)  
     sqls/zip_data_flag_update.sql を DB にインポートして、フラグを更新する
 
