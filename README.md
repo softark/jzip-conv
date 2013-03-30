@@ -58,7 +58,7 @@ MySQL のインポート用 SQL ファイルを生成するプログラム。
                 JIGYOSYO-01.sql  ... 個別事業所データ1
             + 1304               ... 2013年3月
             + YYMM               ... 一般に20YY年MM月
-        + updates                  ... 更新用 SQL
+        + updates                ... 更新用 SQL
             update_1303.sql      ... 2013年3月
             update_1304.sql      ... 2013年3月
             update_YYMM.sql      ... 一般に20YY年MM月
