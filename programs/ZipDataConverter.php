@@ -110,6 +110,7 @@ class ZipDataConverter
 
         // マスター SQL ファイルをマスター・データ・ディレクトリにコピーする
         if (count($masterSqlFiles) > 0) {
+            echo 'マスター SQL ファイル ... コピー開始 ...' . "\n\n";
             $masterDir = MASTERS_DIR . DIRECTORY_SEPARATOR . $yearMonth;
             @mkdir($masterDir);
             foreach($masterSqlFiles as $src) {
@@ -117,17 +118,18 @@ class ZipDataConverter
                 $dstPath = $masterDir . DIRECTORY_SEPARATOR . $src;
                 copy($srcPath, $dstPath);
             }
+            echo 'マスター SQL ファイル ... コピー完了 !!' . "\n\n";
         }
 
         // 更新用 SQL を一つにまとめたファイルを更新データ・ディレクトリに作成する
         if (count($updateSqlFilePaths) > 0) {
-            echo '更新用単一 SQL ファイル作成 ... 作成開始 ...' . "\n\n";
+            echo '更新用単一 SQL ファイル ... 作成開始 ...' . "\n\n";
             $dstFileName = UPDATES_DIR . DIRECTORY_SEPARATOR . "update_" . $yearMonth . ".sql";
             @unlink($dstFileName);
             foreach ($updateSqlFilePaths as $src) {
                 file_put_contents($dstFileName, file_get_contents($src), FILE_APPEND);
             }
-            echo '更新用単一 SQL ファイル作成 ... 作成完了 !!' . "\n\n";
+            echo '更新用単一 SQL ファイル ... 作成完了 !!' . "\n\n";
         }
     }
 }
