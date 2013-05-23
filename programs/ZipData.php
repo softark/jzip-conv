@@ -202,20 +202,31 @@ class ZipData extends ZipDataCommon
         if ($data[self::BLOCK] == '以下に掲載がない場合') {
             $data[self::STREET] = $data[self::BLOCK];
             $data[self::BLOCK_KANA] = '';
-            $data[self::BLOCK] = '**';
+            $data[self::BLOCK] = '';
+            return $data;
         }
         // 「... の次に番地がくる場合」
         if (strpos($data[self::BLOCK], 'の次に番地がくる場合') !== false) {
             $data[self::STREET] = $data[self::BLOCK];
             $data[self::BLOCK_KANA] = '';
             $data[self::BLOCK] = '';
+            return $data;
         }
         // 「... 一円」
         // ただし、「一円」という地名もあるので、strpos() は使用不可
-        if (preg_match('/^.+一円$/', $data[8], $matches)) {
+        if (preg_match('/^.+一円$/u', $data[8], $matches)) {
             $data[self::STREET] = $data[self::BLOCK];
             $data[self::BLOCK_KANA] = '';
             $data[self::BLOCK] = '';
+            return $data;
+        }
+        // BLOCK 全体が複数データの併記または範囲データの記述である場合は、すべてを STREET に移動
+        if (preg_match('/^([^（]*)(、|〜)/u', $data[self::BLOCK])) {
+            $data[self::STREET] = $data[self::BLOCK];
+            $data[self::STREET_KANA] = $data[self::BLOCK_KANA];
+            $data[self::BLOCK] = '';
+            $data[self::BLOCK_KANA] = '';
+            return $data;
         }
         // BLOCK_KANA 細分化 ... '(' と ')' に囲まれた部分を BLOCK_KANA から STREET_KANA に移動
         if (preg_match('/(.*)\((.*)\)$/', $data[self::BLOCK_KANA], $matches)) {
@@ -223,7 +234,7 @@ class ZipData extends ZipDataCommon
             $data[self::STREET_KANA] = $matches[2];
         }
         // BLOCK 細分化 ... '（' と '）' に囲まれた部分を BLOCK から STREET に移動
-        if (preg_match('/(.*)（(.*)）$/', $data[8], $matches)) {
+        if (preg_match('/(.*)（(.*)）$/u', $data[self::BLOCK], $matches)) {
             $data[self::BLOCK] = $matches[1];
             $data[self::STREET] = mb_convert_kana($matches[2], 'a', 'UTF-8');
         }
