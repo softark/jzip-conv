@@ -46,7 +46,7 @@ require_once('ZipData.php');
 require_once('ZipBizData.php');
 
 /** @var $yearMonth string 年月 */
-$yearMonth = '1409';
+$yearMonth = '1410';
 
 $converter = new ZipDataConverter($yearMonth);
 $converter->runConversion();
