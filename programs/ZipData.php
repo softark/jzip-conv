@@ -225,8 +225,7 @@ class ZipData extends ZipDataCommon
             $data[self::STREET] = $data[self::BLOCK];
             $data[self::BLOCK_KANA] = '';
             $data[self::BLOCK] = '';
-        }
-        // 「... の次に番地がくる場合」
+        } // 「... の次に番地がくる場合」
         else if (strpos($data[self::BLOCK], 'の次に番地がくる場合') !== false) {
             $data[self::STREET] = $data[self::BLOCK];
             $data[self::BLOCK_KANA] = '';
@@ -238,15 +237,13 @@ class ZipData extends ZipDataCommon
             $data[self::STREET] = $data[self::BLOCK];
             $data[self::BLOCK_KANA] = '';
             $data[self::BLOCK] = '';
-        }
-        // BLOCK 全体が複数データの併記または範囲データの記述である場合は、すべてを STREET に移動
+        } // BLOCK 全体が複数データの併記または範囲データの記述である場合は、すべてを STREET に移動
         else if (preg_match('/^([^（]*)(、|〜)/u', $data[self::BLOCK])) {
             $data[self::STREET] = $data[self::BLOCK];
             $data[self::STREET_KANA] = $data[self::BLOCK_KANA];
             $data[self::BLOCK] = '';
             $data[self::BLOCK_KANA] = '';
-        }
-        else {
+        } else {
             // BLOCK_KANA 細分化 ... '(' と ')' に囲まれた部分を BLOCK_KANA から STREET_KANA に移動
             if (preg_match('/(.*)\((.*)\)$/', $data[self::BLOCK_KANA], $matches)) {
                 $data[self::BLOCK_KANA] = $matches[1];
@@ -329,21 +326,21 @@ class ZipData extends ZipDataCommon
             $data = explode(',', trim($line));
             $sqlLine =
                 '(' .
-                    '"' . $data[self::AG_CODE] . '",' .
-                    '"' . $data[self::ZIP_CODE] . '",' .
-                    '"' . $data[self::PREF_KANA] . '",' .
-                    '"' . $data[self::TOWN_KANA] . '",' .
-                    '"' . $data[self::BLOCK_KANA] . '",' .
-                    '"' . $data[self::STREET_KANA] . '",' .
-                    '"' . $data[self::PREF] . '",' .
-                    '"' . $data[self::TOWN] . '",' .
-                    '"' . $data[self::BLOCK] . '",' .
-                    '"' . $data[self::STREET] . '",' .
-                    $data[self::M_ZIPS] . ',' .
-                    $data[self::M_BANCHIS] . ',' .
-                    $data[self::CHOMES] . ',' .
-                    $data[self::M_BLOCKS] .
-                    ')';
+                '"' . $data[self::AG_CODE] . '",' .
+                '"' . $data[self::ZIP_CODE] . '",' .
+                '"' . $data[self::PREF_KANA] . '",' .
+                '"' . $data[self::TOWN_KANA] . '",' .
+                '"' . $data[self::BLOCK_KANA] . '",' .
+                '"' . $data[self::STREET_KANA] . '",' .
+                '"' . $data[self::PREF] . '",' .
+                '"' . $data[self::TOWN] . '",' .
+                '"' . $data[self::BLOCK] . '",' .
+                '"' . $data[self::STREET] . '",' .
+                $data[self::M_ZIPS] . ',' .
+                $data[self::M_BANCHIS] . ',' .
+                $data[self::CHOMES] . ',' .
+                $data[self::M_BLOCKS] .
+                ')';
             if ($sqlCount > 0) {
                 if ($sqlCount < LINES_PER_SQL) {
                     fwrite($dstFile, ",\n");

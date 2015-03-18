@@ -97,7 +97,7 @@ class ZipBizData extends ZipDataCommon
             return;
         }
 
-        /** @var int $lineCountSrc  変換元ライン数 */
+        /** @var int $lineCountSrc 変換元ライン数 */
         $lineCountSrc = 0;
 
         /** @var KanaDic $kanaDic フリカナ辞書 */
@@ -209,21 +209,21 @@ class ZipBizData extends ZipDataCommon
             $data = explode(',', trim($line));
             $sqlLine =
                 '(' .
-                    '"' . $data[self::AG_CODE] . '",' .
-                    '"' . $data[self::ZIP_CODE] . '",' .
-                    '"' . $data[self::PREF_KANA] . '",' .
-                    '"' . $data[self::TOWN_KANA] . '",' .
-                    '"' . $data[self::BLOCK_KANA] . '",' .
-                    '"' . $data[self::PREF] . '",' .
-                    '"' . $data[self::TOWN] . '",' .
-                    '"' . $data[self::BLOCK] . '",' .
-                    '"' . $data[self::STREET] . '",' .
-                    '1,' . // biz
-                    $data[self::TYPE] . ',' .
-                    $data[self::SERIAL_NO] . ',' .
-                    '"' . $data[self::COMPANY_NAME_KANA] . '",' .
-                    '"' . $data[self::COMPANY_NAME] . '"' .
-                    ')';
+                '"' . $data[self::AG_CODE] . '",' .
+                '"' . $data[self::ZIP_CODE] . '",' .
+                '"' . $data[self::PREF_KANA] . '",' .
+                '"' . $data[self::TOWN_KANA] . '",' .
+                '"' . $data[self::BLOCK_KANA] . '",' .
+                '"' . $data[self::PREF] . '",' .
+                '"' . $data[self::TOWN] . '",' .
+                '"' . $data[self::BLOCK] . '",' .
+                '"' . $data[self::STREET] . '",' .
+                '1,' . // biz
+                $data[self::TYPE] . ',' .
+                $data[self::SERIAL_NO] . ',' .
+                '"' . $data[self::COMPANY_NAME_KANA] . '",' .
+                '"' . $data[self::COMPANY_NAME] . '"' .
+                ')';
             if ($sqlCount > 0) {
                 if ($sqlCount < LINES_PER_SQL) {
                     fwrite($dstFile, ",\n");

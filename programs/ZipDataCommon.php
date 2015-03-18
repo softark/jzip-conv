@@ -110,7 +110,7 @@ class ZipDataCommon
      */
     public function getSqlFileName($fileNo)
     {
-        return $this->getDataName() . '-'  . sprintf("%02d", $fileNo) . '.sql';
+        return $this->getDataName() . '-' . sprintf("%02d", $fileNo) . '.sql';
     }
 
     /**
@@ -188,7 +188,7 @@ class ZipDataCommon
      */
     public function checkStrLength($srcData, &$maxLenData, $indexes)
     {
-        foreach($indexes as $index) {
+        foreach ($indexes as $index) {
             if (($len = mb_strlen($srcData[$index], 'UTF-8')) > $maxLenData[$index]) {
                 $maxLenData[$index] = $len;
             }
