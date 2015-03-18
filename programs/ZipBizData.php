@@ -149,20 +149,13 @@ class ZipBizData extends ZipDataCommon
      */
     private function checkMaxLength($data)
     {
-        if (mb_strlen($data[self::PREF_KANA], 'UTF-8') > $this->maxLength[self::PREF_KANA])
-            $this->maxLength[self::PREF_KANA] = mb_strlen($data[self::PREF_KANA], 'UTF-8');
-        if (mb_strlen($data[self::TOWN_KANA], 'UTF-8') > $this->maxLength[self::TOWN_KANA])
-            $this->maxLength[self::TOWN_KANA] = mb_strlen($data[self::TOWN_KANA], 'UTF-8');
-        if (mb_strlen($data[self::BLOCK_KANA], 'UTF-8') > $this->maxLength[self::BLOCK_KANA])
-            $this->maxLength[self::BLOCK_KANA] = mb_strlen($data[self::BLOCK_KANA], 'UTF-8');
-        if (mb_strlen($data[self::PREF], 'UTF-8') > $this->maxLength[self::PREF])
-            $this->maxLength[self::PREF] = mb_strlen($data[self::PREF], 'UTF-8');
-        if (mb_strlen($data[self::TOWN], 'UTF-8') > $this->maxLength[self::TOWN])
-            $this->maxLength[self::TOWN] = mb_strlen($data[self::TOWN], 'UTF-8');
-        if (mb_strlen($data[self::BLOCK], 'UTF-8') > $this->maxLength[self::BLOCK])
-            $this->maxLength[self::BLOCK] = mb_strlen($data[self::BLOCK], 'UTF-8');
-        if (mb_strlen($data[self::STREET], 'UTF-8') > $this->maxLength[self::STREET])
-            $this->maxLength[self::STREET] = mb_strlen($data[self::STREET], 'UTF-8');
+        $this->checkStrLength($data, $this->maxLength, self::PREF_KANA);
+        $this->checkStrLength($data, $this->maxLength, self::TOWN_KANA);
+        $this->checkStrLength($data, $this->maxLength, self::BLOCK_KANA);
+        $this->checkStrLength($data, $this->maxLength, self::PREF);
+        $this->checkStrLength($data, $this->maxLength, self::TOWN);
+        $this->checkStrLength($data, $this->maxLength, self::BLOCK);
+        $this->checkStrLength($data, $this->maxLength, self::STREET);
     }
 
     /**

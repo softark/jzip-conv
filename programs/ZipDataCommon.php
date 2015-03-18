@@ -179,4 +179,17 @@ class ZipDataCommon
             }
         }
     }
+
+    /**
+     * 文字列の長さを既存の最大値と比べて、最大値を更新する
+     * @param array $srcData
+     * @param array $maxData
+     * @param int $index
+     */
+    public function checkStrLength($srcData, &$maxLenData, $index)
+    {
+        if (($len = mb_strlen($srcData[$index], 'UTF-8')) > $maxLenData[$index]) {
+            $maxLenData[$index] = $len;
+        }
+    }
 }

@@ -101,6 +101,29 @@ class ZipData extends ZipDataCommon
             return;
         }
 
+        // データを正規化
+        list($lineCountSrc, $lineCountDst) = $this->normalizeData($srcFile, $dstFile);
+
+        fclose($srcFile);
+        fclose($dstFile);
+
+        echo 'CSV データ正規化完了!!' . "\n";
+        echo "\n";
+        $this->showMaxLengths();
+        echo '$lineCountSrc = ' . $lineCountSrc . "\n";
+        echo '$lineCountDst = ' . $lineCountDst . "\n";
+        echo '統合数 = ' . ($lineCountSrc - $lineCountDst) . "\n";
+        echo "\n";
+    }
+
+    /**
+     * データを正規化する
+     * @param resource $srcFile ソースファイル
+     * @param resource $dstFile デスティネーションファイル
+     * @return array
+     */
+    private function normalizeData($srcFile, $dstFile)
+    {
         /**
          * @var array $dataPending データバッファ
          */
@@ -169,18 +192,9 @@ class ZipData extends ZipDataCommon
             // 書き出し
             $this->outputOneLineToCsv($dstFile, $dataPending);
             $lineCountDst++;
+            return array($lineCountSrc, $lineCountDst);
         }
-
-        fclose($srcFile);
-        fclose($dstFile);
-
-        echo 'CSV データ正規化完了!!' . "\n";
-        echo "\n";
-        $this->showMaxLengths();
-        echo '$lineCountSrc = ' . $lineCountSrc . "\n";
-        echo '$lineCountDst = ' . $lineCountDst . "\n";
-        echo '統合数 = ' . ($lineCountSrc - $lineCountDst) . "\n";
-        echo "\n";
+        return array($lineCountSrc, $lineCountDst);
     }
 
     /**
@@ -253,22 +267,14 @@ class ZipData extends ZipDataCommon
      */
     private function checkMaxLength($data)
     {
-        if (mb_strlen($data[self::PREF_KANA], 'UTF-8') > $this->maxLength[self::PREF_KANA])
-            $this->maxLength[self::PREF_KANA] = mb_strlen($data[self::PREF_KANA], 'UTF-8');
-        if (mb_strlen($data[self::TOWN_KANA], 'UTF-8') > $this->maxLength[self::TOWN_KANA])
-            $this->maxLength[self::TOWN_KANA] = mb_strlen($data[self::TOWN_KANA], 'UTF-8');
-        if (mb_strlen($data[self::BLOCK_KANA], 'UTF-8') > $this->maxLength[self::BLOCK_KANA])
-            $this->maxLength[self::BLOCK_KANA] = mb_strlen($data[self::BLOCK_KANA], 'UTF-8');
-        if (mb_strlen($data[self::STREET_KANA], 'UTF-8') > $this->maxLength[self::STREET_KANA])
-            $this->maxLength[self::STREET_KANA] = mb_strlen($data[self::STREET_KANA], 'UTF-8');
-        if (mb_strlen($data[self::PREF], 'UTF-8') > $this->maxLength[self::PREF])
-            $this->maxLength[self::PREF] = mb_strlen($data[self::PREF], 'UTF-8');
-        if (mb_strlen($data[self::TOWN], 'UTF-8') > $this->maxLength[self::TOWN])
-            $this->maxLength[self::TOWN] = mb_strlen($data[self::TOWN], 'UTF-8');
-        if (mb_strlen($data[self::BLOCK], 'UTF-8') > $this->maxLength[self::BLOCK])
-            $this->maxLength[self::BLOCK] = mb_strlen($data[self::BLOCK], 'UTF-8');
-        if (mb_strlen($data[self::STREET], 'UTF-8') > $this->maxLength[self::STREET])
-            $this->maxLength[self::STREET] = mb_strlen($data[self::STREET], 'UTF-8');
+        $this->checkStrLength($data, $this->maxLength, self::PREF_KANA);
+        $this->checkStrLength($data, $this->maxLength, self::TOWN_KANA);
+        $this->checkStrLength($data, $this->maxLength, self::BLOCK_KANA);
+        $this->checkStrLength($data, $this->maxLength, self::STREET_KANA);
+        $this->checkStrLength($data, $this->maxLength, self::PREF);
+        $this->checkStrLength($data, $this->maxLength, self::TOWN);
+        $this->checkStrLength($data, $this->maxLength, self::BLOCK);
+        $this->checkStrLength($data, $this->maxLength, self::STREET);
     }
 
     /**
