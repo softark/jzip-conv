@@ -40,13 +40,14 @@ class KanaDic
      */
     public function __construct($_kanaDicDir = null)
     {
-        if (isset($kanaDicDir)) {
+        if (isset($_kanaDicDir)) {
             $this->kanaDicDir = $_kanaDicDir;
         } else {
-            if (defined('KANA_DIC_DIR'))
+            if (defined('KANA_DIC_DIR')) {
                 $this->kanaDicDir = KANA_DIC_DIR;
-            else
+            } else {
                 $this->kanaDicDir = '.' . DIRECTORY_SEPARATOR;
+            }
         }
         $this->prefDic = $this->readKanaDic('pref');
         $this->townDic = $this->readKanaDic('town');
@@ -75,16 +76,19 @@ class KanaDic
     {
         $kana = '';
         if ($type == 'pref') {
-            if (isset($this->prefDic[$name]))
+            if (isset($this->prefDic[$name])) {
                 $kana = $this->prefDic[$name];
+            }
         } else if ($type == 'town') {
             $key = $agCode . ':' . $name;
-            if (isset($this->townDic[$key]))
+            if (isset($this->townDic[$key])) {
                 $kana = $this->townDic[$key];
+            }
         } else if ($type == 'block') {
             $key = $agCode . ':' . $name;
-            if (isset($this->blockDic[$key]))
+            if (isset($this->blockDic[$key])) {
                 $kana = $this->blockDic[$key];
+            }
         }
         return $kana;
     }
@@ -140,19 +144,23 @@ class KanaDic
      * @param string $type
      * @return array
      */
-    function readKanaDic($type)
+    private function readKanaDic($type)
     {
         $dic = array();
         $fileName = $this->kanaDicDir . DIRECTORY_SEPARATOR . $type . '.csv';
         if (file_exists($fileName)) {
-            $dicFile = fopen($fileName, 'r');
-            while ($line = fgets($dicFile)) {
-                $words = explode(',', $line);
-                $key = trim($words[0], '"');
-                $value = trim($words[1], "\"\n");
-                $dic[$key] = $value;
+            if ($dicFile = fopen($fileName, 'r')) {
+                while ($line = fgets($dicFile)) {
+                    $words = explode(',', $line);
+                    $key = trim($words[0], '"');
+                    $value = trim($words[1], "\"\n");
+                    $dic[$key] = $value;
+                }
+                fclose($dicFile);
+            } else {
+                fputs(STDERR, "Failed to read kana dictionary [$fileName]\n");
+                exit(-1);
             }
-            fclose($dicFile);
         }
         return $dic;
     }
@@ -162,12 +170,17 @@ class KanaDic
      * @param array $dic
      * @param string $type
      */
-    function writeKanaDic($dic, $type)
+    private function writeKanaDic($dic, $type)
     {
-        $dicFile = fopen($this->kanaDicDir . DIRECTORY_SEPARATOR . $type . '.csv', 'w');
-        foreach ($dic as $key => $value) {
-            fwrite($dicFile, '"' . $key . '","' . $value . '"' . "\n");
+        $fileName = $this->kanaDicDir . DIRECTORY_SEPARATOR . $type . '.csv';
+        if ($dicFile = fopen($fileName, 'w')) {
+            foreach ($dic as $key => $value) {
+                fwrite($dicFile, '"' . $key . '","' . $value . '"' . "\n");
+            }
+            fclose($dicFile);
+        } else {
+            fputs(STDERR, "Failed to write kana dictionary [$fileName]\n");
+            exit(-1);
         }
-        fclose($dicFile);
     }
 }

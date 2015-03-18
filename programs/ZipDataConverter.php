@@ -12,7 +12,7 @@ class ZipDataConverter
 
     /**
      * コンストラクタ
-     * @param $yearMonth 年月
+     * @param string $yearMonth 年月
      */
     public function __construct($yearMonth)
     {
@@ -24,13 +24,24 @@ class ZipDataConverter
      */
     public function runConversion()
     {
-        /** @var $yearMonth string 対象の年月 */
+        /**
+         * @var string $yearMonth 対象の年月
+         */
         $yearMonth = $this->yearMonth;
-        /** @var $dataDir string データ・ディレクトリ */
+
+        /**
+         * @var string $dataDir データ・ディレクトリ
+         */
         $dataDir = DATA_DIR . DIRECTORY_SEPARATOR . $yearMonth;
-        /** @var $updateSqlFilePaths 更新用 SQL ファイル名 */
+
+        /**
+         * @var string[] $updateSqlFilePaths 更新用 SQL ファイル名
+         */
         $masterSqlFiles = array();
-        /** @var $updateSqlFiles 更新用 SQL ファイル名 */
+
+        /**
+         * @var string[] $updateSqlFiles 更新用 SQL ファイル名
+         */
         $updateSqlFilePaths = array();
 
         // 全県データがあれば処理する
@@ -112,11 +123,17 @@ class ZipDataConverter
         if (count($masterSqlFiles) > 0) {
             echo 'マスター SQL ファイル ... コピー開始 ...' . "\n\n";
             $masterDir = MASTERS_DIR . DIRECTORY_SEPARATOR . $yearMonth;
-            @mkdir($masterDir);
+            if (!mkdir($masterDir)) {
+                fputs(STDERR, "Failed to make the master directory [$masterDir]\n");
+                exit(-1);
+            }
             foreach($masterSqlFiles as $src) {
                 $srcPath = $dataDir . DIRECTORY_SEPARATOR . WORK_SUB_DIR . DIRECTORY_SEPARATOR . $src;
                 $dstPath = $masterDir . DIRECTORY_SEPARATOR . $src;
-                copy($srcPath, $dstPath);
+                if (!copy($srcPath, $dstPath)) {
+                    fputs(STDERR, "Failed to copy a file [$srcPath] to [$dstPath]\n");
+                    exit(-1);
+                }
             }
             echo 'マスター SQL ファイル ... コピー完了 !!' . "\n\n";
         }
@@ -125,9 +142,15 @@ class ZipDataConverter
         if (count($updateSqlFilePaths) > 0) {
             echo '更新用単一 SQL ファイル ... 作成開始 ...' . "\n\n";
             $dstFileName = UPDATES_DIR . DIRECTORY_SEPARATOR . "update_" . $yearMonth . ".sql";
-            @unlink($dstFileName);
+            if (!unlink($dstFileName)) {
+                fputs(STDERR, "Failed to unlink the master updating file [$dstFileName]\n");
+                exit(-1);
+            }
             foreach ($updateSqlFilePaths as $src) {
-                file_put_contents($dstFileName, file_get_contents($src), FILE_APPEND);
+                if (file_put_contents($dstFileName, file_get_contents($src), FILE_APPEND) === false) {
+                    fputs(STDERR, "Failed to update the master updating file [$dstFileName]\n");
+                    exit(-1);
+                }
             }
             echo '更新用単一 SQL ファイル ... 作成完了 !!' . "\n\n";
         }

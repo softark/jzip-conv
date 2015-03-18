@@ -45,7 +45,7 @@ class ZipDataCommon
     }
 
     /**
-     * @param $count SQL ファイル数
+     * @param int $count SQL ファイル数
      */
     public function setSqlFileCount($count)
     {
@@ -54,8 +54,8 @@ class ZipDataCommon
 
     /**
      * コンストラクタ
-     * @param $dataDir ワーク・ディレクトリ
-     * @param $dataName データ名 (拡張子を除いたソース CSV ファイル名)
+     * @param string $dataDir ワーク・ディレクトリ
+     * @param string $dataName データ名 (拡張子を除いたソース CSV ファイル名)
      */
     public function __construct($dataDir, $dataName)
     {
@@ -105,7 +105,7 @@ class ZipDataCommon
     }
 
     /**
-     * @param $fileNo ファイル番号
+     * @param int $fileNo ファイル番号
      * @return string SQL ファイル名
      */
     public function getSqlFileName($fileNo)
@@ -114,7 +114,7 @@ class ZipDataCommon
     }
 
     /**
-     * @param $fileNo ファイル番号
+     * @param int $fileNo ファイル番号
      * @return string SQL ファイル・パス
      */
     public function getSqlFilePath($fileNo)
@@ -159,7 +159,9 @@ class ZipDataCommon
         $search = '/' . $this->getDataName() . '-\d\d\.sql$/';
         while ($dstFileName = readdir($dir)) {
             if (preg_match($search, $dstFileName)) {
-                unlink($workDir . DIRECTORY_SEPARATOR . $dstFileName);
+                if (!unlink($workDir . DIRECTORY_SEPARATOR . $dstFileName)) {
+                    fputs(STDERR, "Failed to unlink a file [$dstFileName].\n");
+                }
             }
         }
     }
@@ -171,7 +173,10 @@ class ZipDataCommon
     {
         $workDir = $this->getDataDir() . DIRECTORY_SEPARATOR . WORK_SUB_DIR;
         if (!file_exists($workDir)) {
-            @mkdir($workDir);
+            if (!mkdir($workDir)) {
+                fputs(STDERR, "Failed to make working directory [$workDir].\n");
+                exit(-1);
+            }
         }
     }
 }

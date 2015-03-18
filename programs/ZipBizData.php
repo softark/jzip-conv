@@ -62,8 +62,8 @@ class ZipBizData extends ZipDataCommon
 
     /**
      * コンストラクタ
-     * @param $dataDir ワーク・ディレクトリ
-     * @param $dataName データ名 (拡張子を除いたソース CSV ファイル名)
+     * @param string $dataDir ワーク・ディレクトリ
+     * @param string $dataName データ名 (拡張子を除いたソース CSV ファイル名)
      */
     public function __construct($dataDir, $dataName)
     {
@@ -97,10 +97,10 @@ class ZipBizData extends ZipDataCommon
             return;
         }
 
-        /** @var $lineCountSrc int 変換元ライン数 */
+        /** @var int $lineCountSrc  変換元ライン数 */
         $lineCountSrc = 0;
 
-        /** @var $kanaDic フリカナ辞書 */
+        /** @var KanaDic $kanaDic フリカナ辞書 */
         $kanaDic = new KanaDic;
 
         while ($line = fgets($srcFile)) {
@@ -145,7 +145,7 @@ class ZipBizData extends ZipDataCommon
 
     /**
      * 最大データ長をチェック
-     * @param $data データ
+     * @param string[] $data データ
      */
     private function checkMaxLength($data)
     {

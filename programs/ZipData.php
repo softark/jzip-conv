@@ -66,8 +66,8 @@ class ZipData extends ZipDataCommon
 
     /**
      * コンストラクタ
-     * @param $dataDir ワーク・ディレクトリ
-     * @param $dataName データ名 (拡張子を除いたソース CSV ファイル名)
+     * @param string $dataDir ワーク・ディレクトリ
+     * @param string $dataName データ名 (拡張子を除いたソース CSV ファイル名)
      */
     public function __construct($dataDir, $dataName)
     {
@@ -100,11 +100,20 @@ class ZipData extends ZipDataCommon
             fclose($srcFile);
             return;
         }
-        /** @var $dataPending array データバッファ */
+
+        /**
+         * @var $dataPending array データバッファ
+         */
         $dataPending = array();
-        /** @var $lineCountSrc int 変換元ライン数 */
+
+        /**
+         * @var $lineCountSrc int 変換元ライン数
+         */
         $lineCountSrc = 0;
-        /** @var $lineCountDst int 変換先ライン数 */
+
+        /**
+         * @var $lineCountDst int 変換先ライン数
+         */
         $lineCountDst = 0;
 
         while ($line = fgets($srcFile)) {
@@ -176,8 +185,8 @@ class ZipData extends ZipDataCommon
 
     /**
      * 一行書き出す
-     * @param $dstFile 書き出し先のファイル
-     * @param $data 一行のデータ
+     * @param resource $dstFile 書き出し先のファイル
+     * @param string $data 一行のデータ
      */
     private function outputOneLineToCsv($dstFile, $data)
     {
@@ -191,8 +200,8 @@ class ZipData extends ZipDataCommon
 
     /**
      * 町域を分析して、必要なら、町域と町域詳細とに分割する
-     * @param $data 一行分のデータ
-     * @return array 変換された $data
+     * @param string $data 一行分のデータ
+     * @return string[] 変換された $data
      */
     private function divideBlockData($data)
     {
@@ -240,7 +249,7 @@ class ZipData extends ZipDataCommon
 
     /**
      * 最大データ長をチェック
-     * @param $data データ
+     * @param string[] $data データ
      */
     private function checkMaxLength($data)
     {
