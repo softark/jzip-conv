@@ -145,7 +145,7 @@ class ZipBizData extends ZipDataCommon
 
     /**
      * 最大データ長をチェック
-     * @param string[] $data データ
+     * @param array $data データ
      */
     private function checkMaxLength($data)
     {

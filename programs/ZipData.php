@@ -102,12 +102,12 @@ class ZipData extends ZipDataCommon
         }
 
         /**
-         * @var $dataPending array データバッファ
+         * @var array $dataPending データバッファ
          */
         $dataPending = array();
 
         /**
-         * @var $lineCountSrc int 変換元ライン数
+         * @var int $lineCountSrc 変換元ライン数
          */
         $lineCountSrc = 0;
 
@@ -186,7 +186,7 @@ class ZipData extends ZipDataCommon
     /**
      * 一行書き出す
      * @param resource $dstFile 書き出し先のファイル
-     * @param string $data 一行のデータ
+     * @param array $data 一行のデータ
      */
     private function outputOneLineToCsv($dstFile, $data)
     {
@@ -200,8 +200,8 @@ class ZipData extends ZipDataCommon
 
     /**
      * 町域を分析して、必要なら、町域と町域詳細とに分割する
-     * @param string $data 一行分のデータ
-     * @return string[] 変換された $data
+     * @param array $data 一行分のデータ
+     * @return array 変換された $data
      */
     private function divideBlockData($data)
     {
@@ -249,7 +249,7 @@ class ZipData extends ZipDataCommon
 
     /**
      * 最大データ長をチェック
-     * @param string[] $data データ
+     * @param array $data データ
      */
     private function checkMaxLength($data)
     {
