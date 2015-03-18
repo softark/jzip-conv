@@ -149,13 +149,17 @@ class ZipBizData extends ZipDataCommon
      */
     private function checkMaxLength($data)
     {
-        $this->checkStrLength($data, $this->maxLength, self::PREF_KANA);
-        $this->checkStrLength($data, $this->maxLength, self::TOWN_KANA);
-        $this->checkStrLength($data, $this->maxLength, self::BLOCK_KANA);
-        $this->checkStrLength($data, $this->maxLength, self::PREF);
-        $this->checkStrLength($data, $this->maxLength, self::TOWN);
-        $this->checkStrLength($data, $this->maxLength, self::BLOCK);
-        $this->checkStrLength($data, $this->maxLength, self::STREET);
+        $this->checkStrLength($data, $this->maxLength,
+            array(
+                self::PREF_KANA,
+                self::TOWN_KANA,
+                self::BLOCK_KANA,
+                self::PREF,
+                self::TOWN,
+                self::BLOCK,
+                self::STREET
+            )
+        );
     }
 
     /**
