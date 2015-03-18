@@ -118,8 +118,8 @@ class ZipData extends ZipDataCommon
 
     /**
      * データを正規化する
-     * @param object $srcFile ソースファイル
-     * @param object $dstFile デスティネーションファイル
+     * @param resource $srcFile ソースファイル
+     * @param resource $dstFile デスティネーションファイル
      * @return array
      */
     private function normalizeData($srcFile, $dstFile)
