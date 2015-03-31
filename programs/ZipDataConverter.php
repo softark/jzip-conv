@@ -188,9 +188,11 @@ class ZipDataConverter
         if (count($this->updateSqlFilePaths) > 0) {
             echo '更新用単一 SQL ファイル ... 作成開始 ...' . "\n\n";
             $dstFileName = UPDATES_DIR . DIRECTORY_SEPARATOR . "update_" . $this->yearMonth . ".sql";
-            if (!unlink($dstFileName)) {
-                fputs(STDERR, "Failed to unlink the master updating file [$dstFileName]\n");
-                exit(-1);
+            if (file_exists($dstFileName)) {
+                if (!unlink($dstFileName)) {
+                    fputs(STDERR, "Failed to unlink the master updating file [$dstFileName]\n");
+                    exit(-1);
+                }
             }
 
             foreach ($this->updateSqlFilePaths as $src) {
