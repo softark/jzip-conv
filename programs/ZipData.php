@@ -83,20 +83,22 @@ class ZipData extends ZipDataCommon
      */
     public function normalizeCsvData()
     {
-        echo "CSV データ正規化開始 ... \n";
-        echo "変換元 CSV ファイル = " . $this->getRawCsvFilePath() . "\n";
-        echo "正規化 CSV ファイル = " . $this->getCookedCsvFilePath() . "\n";
+        echo "Normalizing CSV data ... ";
+        echo "from [{$this->getRawCsvFilePath()}] ";
+        echo "to [{$this->getCookedCsvFilePath()}] ... ";
 
         /** @var $srcFile object 変換元 CSV ファイル */
         $srcFile = fopen($this->getRawCsvFilePath(), 'r');
         if (!$srcFile) {
-            echo "変換元 CSV ファイルのオープンに失敗。\n";
+            echo "\n";
+            echo "Failed to open the source CSV file.\n";
             return;
         }
         /** @var $srcFile object 変換先 CSV ファイル */
         $dstFile = fopen($this->getCookedCsvFilePath(), 'w');
         if (!$dstFile) {
-            echo "正規化 CSV ファイルのオープンに失敗。\n";
+            echo "\n";
+            echo "Failed to open the normalized CSV file.\n";
             fclose($srcFile);
             return;
         }
@@ -107,12 +109,12 @@ class ZipData extends ZipDataCommon
         fclose($srcFile);
         fclose($dstFile);
 
-        echo 'CSV データ正規化完了!!' . "\n";
-        echo "\n";
-        $this->showMaxLengths();
-        echo '$lineCountSrc = ' . $lineCountSrc . "\n";
-        echo '$lineCountDst = ' . $lineCountDst . "\n";
-        echo '統合数 = ' . ($lineCountSrc - $lineCountDst) . "\n";
+        echo "done.\n";
+        // $this->showMaxLengths();
+        echo "The source line count = $lineCountSrc\n";
+        echo "The destination line count = $lineCountDst\n";
+        $diff = $lineCountSrc - $lineCountDst;
+        echo "Unified line count = $diff\n";
         echo "\n";
     }
 
@@ -283,16 +285,15 @@ class ZipData extends ZipDataCommon
      */
     private function showMaxLengths()
     {
-        echo '-- データの最大長' . "\n";
-        echo '-- $maxLength[pref_kana] = ' . $this->maxLength[self::PREF_KANA] . "\n";
-        echo '-- $maxLength[town_kana] = ' . $this->maxLength[self::TOWN_KANA] . "\n";
-        echo '-- $maxLength[block_kana] = ' . $this->maxLength[self::BLOCK_KANA] . "\n";
-        echo '-- $maxLength[street_kana] = ' . $this->maxLength[self::STREET_KANA] . "\n";
-        echo '-- $maxLength[pref] = ' . $this->maxLength[self::PREF] . "\n";
-        echo '-- $maxLength[town] = ' . $this->maxLength[self::TOWN] . "\n";
-        echo '-- $maxLength[block] = ' . $this->maxLength[self::BLOCK] . "\n";
-        echo '-- $maxLength[street] = ' . $this->maxLength[self::STREET] . "\n";
-        echo "\n";
+        echo "Max lengths of the data\n";
+        echo "-- maxLength[pref_kana] = {$this->maxLength[self::PREF_KANA]}\n";
+        echo "-- maxLength[town_kana] = {$this->maxLength[self::TOWN_KANA]}\n";
+        echo "-- maxLength[block_kana] = {$this->maxLength[self::BLOCK_KANA]}\n";
+        echo "-- maxLength[street_kana] = {$this->maxLength[self::STREET_KANA]}\n";
+        echo "-- maxLength[pref] = {$this->maxLength[self::PREF]}\n";
+        echo "-- maxLength[town] = {$this->maxLength[self::TOWN]}\n";
+        echo "-- maxLength[block] = {$this->maxLength[self::BLOCK]}\n";
+        echo "-- maxLength[street] = {$this->maxLength[self::STREET]}\n";
     }
 
     /**
@@ -300,25 +301,25 @@ class ZipData extends ZipDataCommon
      */
     public function createInsertSqlFiles()
     {
-        echo "INSERT SQL ファイル書き出し開始 ... \n";
+        echo "Writing the INSERT SQL file ...\n";
 
         // 既存の同名ファイルを削除
         $this->deleteExistingSqlFiles();
 
         $srcFile = fopen($this->getCookedCsvFilePath(), 'r');
         if (!$srcFile) {
-            echo "正規化 CSV ファイルのオープンに失敗。\n";
+            echo "Failed to open the normalized CSV file.\n";
             return;
         }
         $this->setSqlFileCount(1);
         $dstFileName = $this->getSqlFilePath($this->getSqlFileCount());
         $dstFile = fopen($dstFileName, 'w');
         if (!$dstFile) {
-            echo "SQL ファイルのオープンに失敗。\n";
+            echo "Failed to open the SQL file.\n";
             fclose($srcFile);
             return;
         }
-        echo "INSERT SQL ファイル " . $dstFileName . " 書き出し中 ... \n";
+        echo "Writing the INSERT SQL file [$dstFileName] ... ";
 
         $lineCount = 0;
         $sqlCount = 0;
@@ -358,11 +359,11 @@ class ZipData extends ZipDataCommon
                 $dstFileName = $this->getSqlFilePath($this->getSqlFileCount());
                 $dstFile = fopen($dstFileName, 'w');
                 if (!$dstFile) {
-                    echo "SQL ファイルのオープンに失敗。\n";
+                    echo "Failed to open the SQL file.\n";
                     fclose($srcFile);
                     return;
                 }
-                echo "INSERT SQL ファイル " . $dstFileName . " 書き出し中 ... \n";
+                echo "Writing the INSERT SQL file [$dstFileName] ... ";
             }
             if ($sqlCount == 0) {
                 fwrite($dstFile,
@@ -376,7 +377,7 @@ class ZipData extends ZipDataCommon
         fwrite($dstFile, ";\n");
         fclose($dstFile);
         echo "done.\n";
-        echo "INSERT SQL ファイル書き出し完了!!\n\n";
+        echo "\n";
     }
 
     /**
@@ -384,25 +385,25 @@ class ZipData extends ZipDataCommon
      */
     public function createDeleteSqlFiles()
     {
-        echo "DELETE SQL ファイル書き出し開始 ... \n";
+        echo "Writing the DELETE SQL file ...\n";
 
         // 既存の同名ファイルを削除
         $this->deleteExistingSqlFiles();
 
         $srcFile = fopen($this->getCookedCsvFilePath(), 'r');
         if (!$srcFile) {
-            echo "正規化 CSV ファイルのオープンに失敗。\n";
+            echo "Failed to open the normalized CSV file.\n";
             return;
         }
         $this->setSqlFileCount(1);
         $dstFileName = $this->getSqlFilePath($this->getSqlFileCount());
         $dstFile = fopen($dstFileName, 'w');
         if (!$dstFile) {
-            echo "SQL ファイルのオープンに失敗。\n";
+            echo "Failed to open the SQL file.\n";
             fclose($srcFile);
             return;
         }
-        echo "DELETE SQL ファイル " . $dstFileName . " 書き出し中 ... \n";
+        echo "Writing the DELETE SQL file [$dstFileName] ... ";
 
         $lineCount = 0;
         while ($line = fgets($srcFile)) {
@@ -415,17 +416,17 @@ class ZipData extends ZipDataCommon
                 '`street` = "' . $data[self::STREET] . '";' . "\n";
             if ($lineCount >= LINES_PER_SQL_FILE) {
                 fclose($dstFile);
-                echo "done. \n";
+                echo "done.\n";
                 $lineCount = 0;
                 $this->setSqlFileCount($this->getSqlFileCount() + 1);
                 $dstFileName = $this->getSqlFilePath($this->getSqlFileCount());
                 $dstFile = fopen($dstFileName, 'w');
                 if (!$dstFile) {
-                    echo "SQL ファイルのオープンに失敗。\n";
+                    echo "Failed to open the SQL file.\n";
                     fclose($srcFile);
                     return;
                 }
-                echo "DELETE SQL ファイル " . $dstFileName . " 書き出し中 ... \n";
+                echo "Writing the DELETE SQL file [$dstFileName] ... ";
                 $dstFile = fopen($dstFileName, 'w');
             }
             fwrite($dstFile, $sql_line);
@@ -433,7 +434,7 @@ class ZipData extends ZipDataCommon
         }
         fclose($dstFile);
         echo "done.\n";
-        echo "DELETE SQL ファイル書き出し完了!!\n\n";
+        echo "\n";
     }
 
     /**
@@ -441,13 +442,13 @@ class ZipData extends ZipDataCommon
      */
     public function updateKanaDic()
     {
-        echo "フリカナ辞書更新開始 ... \n";
+        echo "Updating the kana dictionary ... ";
 
         $kanaDic = new KanaDic;
 
         $srcFile = fopen($this->getCookedCsvFilePath(), 'r');
         if (!$srcFile) {
-            echo "正規化 CSV ファイルのオープンに失敗。\n";
+            echo "Failed to open the normalized CSV file.\n";
             return;
         }
         while ($line = fgets($srcFile)) {
@@ -477,6 +478,7 @@ class ZipData extends ZipDataCommon
 
         $kanaDic->save();
 
-        echo "フリカナ辞書更新完了 !! \n";
+        echo "done.\n";
+        echo "\n";
     }
 }
