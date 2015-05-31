@@ -83,15 +83,16 @@ class ZipDataDownloader
     private function downloadDataFile($baseUrl, $file)
     {
         $fileName = $file . self::FILE_EXT;
+        $filePath = $this->dataDir . DIRECTORY_SEPARATOR . $fileName;
         echo "$file : downloading ... ";
-        if (!copy($baseUrl . $fileName, $this->dataDir . DIRECTORY_SEPARATOR . $fileName)) {
+        if (!copy($baseUrl . $fileName, $filePath)) {
             fputs(STDERR, "Failed to download the data file [$fileName]\n");
             exit(-1);
         }
 
         echo "extracting ... ";
         $za = new ZipArchive;
-        if (!$za->open($this->dataDir . DIRECTORY_SEPARATOR . $fileName)) {
+        if (!$za->open($filePath)) {
             fputs(STDERR, "Failed to extract the data from [$fileName]\n");
             exit(-1);
         }
