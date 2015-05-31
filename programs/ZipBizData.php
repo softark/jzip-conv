@@ -61,6 +61,19 @@ class ZipBizData extends ZipDataCommon
     );
 
     /**
+     * @var array ラベル
+     */
+    private $labels = array(
+        self::PREF_KANA => 'prefKana',
+        self::TOWN_KANA => 'townKana',
+        self::BLOCK_KANA => 'blockKana',
+        self::PREF => 'pref',
+        self::TOWN => 'town',
+        self::BLOCK => 'block',
+        self::STREET => 'street',
+    );
+
+    /**
      * コンストラクタ
      * @param string $dataDir ワーク・ディレクトリ
      * @param string $dataName データ名 (拡張子を除いたソース CSV ファイル名)
@@ -139,7 +152,7 @@ class ZipBizData extends ZipDataCommon
         fclose($dstFile);
 
         echo "done.\n";
-        // $this->showMaxLengths();
+        $this->showMaxLengths();
         echo "The source line count = $lineCountSrc\n";
         echo "\n";
     }
@@ -150,17 +163,7 @@ class ZipBizData extends ZipDataCommon
      */
     private function checkMaxLength($data)
     {
-        $this->checkStrLength($data, $this->maxLength,
-            array(
-                self::PREF_KANA,
-                self::TOWN_KANA,
-                self::BLOCK_KANA,
-                self::PREF,
-                self::TOWN,
-                self::BLOCK,
-                self::STREET
-            )
-        );
+        $this->checkStrLength($data, $this->maxLength, array_keys($this->maxLength));
     }
 
     /**
@@ -169,13 +172,9 @@ class ZipBizData extends ZipDataCommon
     private function showMaxLengths()
     {
         echo "Max lengths of the data\n";
-        echo "-- maxLength[pref_kana] = {$this->maxLength[self::PREF_KANA]}\n";
-        echo "-- maxLength[town_kana] = {$this->maxLength[self::TOWN_KANA]}\n";
-        echo "-- maxLength[block_kana] = {$this->maxLength[self::BLOCK_KANA]}\n";
-        echo "-- maxLength[pref] = {$this->maxLength[self::PREF]}\n";
-        echo "-- maxLength[town] = {$this->maxLength[self::TOWN]}\n";
-        echo "-- maxLength[block] = {$this->maxLength[self::BLOCK]}\n";
-        echo "-- maxLength[street] = {$this->maxLength[self::STREET]}\n";
+        foreach(array_keys($this->maxLength) as $key) {
+            echo "-- max length of {$this->labels[$key]} = {$this->maxLength[$key]}\n";
+        }
     }
 
     /**
