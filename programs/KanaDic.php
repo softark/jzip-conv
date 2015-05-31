@@ -104,14 +104,16 @@ class KanaDic
      */
     public function register($type, $agCode, $name, $kana)
     {
-        if ($type == 'pref') {
-            $this->prefDic[$name] = $kana;
-        } else if ($type == 'town') {
-            $key = $agCode . ':' . $name;
-            $this->townDic[$key] = $kana;
-        } else if ($type == 'block') {
-            $key = $agCode . ':' . $name;
-            $this->blockDic[$key] = $kana;
+        if ($name != '' && $kana != '') {
+            if ($type == 'pref') {
+                $this->prefDic[$name] = $kana;
+            } else if ($type == 'town') {
+                $key = $agCode . ':' . $name;
+                $this->townDic[$key] = $kana;
+            } else if ($type == 'block') {
+                $key = $agCode . ':' . $name;
+                $this->blockDic[$key] = $kana;
+            }
         }
     }
 

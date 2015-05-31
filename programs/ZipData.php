@@ -451,26 +451,10 @@ class ZipData extends ZipDataCommon
         }
         while ($line = fgets($srcFile)) {
             $words = explode(',', $line);
-
-            $prefKana = trim($words[self::PREF_KANA], '"');
-            $pref = trim($words[self::PREF], '"');
-            if ($prefKana != '' && $pref != '') {
-                $kanaDic->register('pref', '', $pref, $prefKana);
-            }
-
+            $kanaDic->register('pref', '', trim($words[self::PREF_KANA], '"'),trim($words[self::PREF], '"'));
             $agCode = trim($words[self::AG_CODE], '"');
-
-            $townKana = trim($words[self::TOWN_KANA], '"');
-            $town = trim($words[self::TOWN], '"');
-            if ($townKana != '' && $town != '') {
-                $kanaDic->register('town', $agCode, $town, $townKana);
-            }
-
-            $blockKana = trim($words[self::BLOCK_KANA], '"');
-            $block = trim($words[self::BLOCK], '"');
-            if ($blockKana != '' && $block != '') {
-                $kanaDic->register('block', $agCode, $block, $blockKana);
-            }
+            $kanaDic->register('town', $agCode, trim($words[self::TOWN_KANA], '"'), trim($words[self::TOWN], '"'));
+            $kanaDic->register('block', $agCode, trim($words[self::BLOCK_KANA], '"'), trim($words[self::BLOCK], '"'));
         }
         fclose($srcFile);
 
