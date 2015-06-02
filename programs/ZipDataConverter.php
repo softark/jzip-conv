@@ -176,13 +176,7 @@ class ZipDataConverter
         if (count($this->masterSqlFiles) > 0) {
             echo "Master SQL file ... copying ... ";
             $masterDir = MASTERS_DIR . DIRECTORY_SEPARATOR . $this->yearMonth;
-            if (!file_exists($masterDir)) {
-                if (!mkdir($masterDir)) {
-                    echo "\n";
-                    fputs(STDERR, "Failed to make the master directory [$masterDir]\n");
-                    exit(-1);
-                }
-            }
+            self::makeReadyDir($masterDir, "master directory");
             foreach ($this->masterSqlFiles as $src) {
                 $srcPath = $this->dataDir . DIRECTORY_SEPARATOR . WORK_SUB_DIR . DIRECTORY_SEPARATOR . $src;
                 $dstPath = $masterDir . DIRECTORY_SEPARATOR . $src;
@@ -194,6 +188,17 @@ class ZipDataConverter
             }
             echo "done.\n";
             echo "\n";
+        }
+    }
+
+    public static function makeReadyDir($dir, $dirName)
+    {
+        if (!file_exists($dir)) {
+            if (!mkdir($dir)) {
+                echo "\n";
+                fputs(STDERR, "Failed to make the $dirName [$dir]\n");
+                exit(-1);
+            }
         }
     }
 

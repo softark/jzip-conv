@@ -172,12 +172,7 @@ class ZipDataCommon
     private function makeReadyWorkDir()
     {
         $workDir = $this->getDataDir() . DIRECTORY_SEPARATOR . WORK_SUB_DIR;
-        if (!file_exists($workDir)) {
-            if (!mkdir($workDir)) {
-                fputs(STDERR, "Failed to make working directory [$workDir].\n");
-                exit(-1);
-            }
-        }
+        ZipDataConverter::makeReadyDir($workDir, "working directory");
     }
 
     /**
@@ -220,11 +215,22 @@ class ZipDataCommon
         echo "\n";
     }
 
+    /**
+     * データを正規化する
+     * @param $srcFile resource ソースの CSV ファイル
+     * @param $dstFile resource デスティネーションの CSV ファイル
+     * @return array
+     */
     protected function normalizeData($srcFile, $dstFile)
     {
         return array(0, 0);
     }
 
+    /**
+     * 一行のデータを取得する
+     * @param $line string 一行のデータ
+     * @return array
+     */
     protected function getDataFromLine($line)
     {
         // SHIFT JIS --> UTF-8
@@ -232,12 +238,16 @@ class ZipDataCommon
         // カンマで分割
         $data = explode(',', $line);
         // 引用符と空白を削除
-        for ($n = 0; $n < count($data); $n++) {
+        $len = count($data);
+        for ($n = 0; $n < $len; $n++) {
             $data[$n] = trim($data[$n], "\" ");
         }
         return $data;
     }
 
+    /**
+     *
+     */
     protected function showMaxLengths()
     {
 
