@@ -50,7 +50,7 @@ class ZipBizData extends ZipDataCommon
     /**
      * 最大データ長チェック用
      */
-    private $maxLength = array(
+    private $maxLengths = array(
         self::PREF_KANA => 0,
         self::TOWN_KANA => 0,
         self::BLOCK_KANA => 0,
@@ -63,7 +63,7 @@ class ZipBizData extends ZipDataCommon
     /**
      * @var array ラベル
      */
-    private $labels = array(
+    private $itemLabels = array(
         self::PREF_KANA => 'prefKana',
         self::TOWN_KANA => 'townKana',
         self::BLOCK_KANA => 'blockKana',
@@ -84,34 +84,17 @@ class ZipBizData extends ZipDataCommon
     }
 
     /**
-     * CSV データを正規化する
+     * データを正規化する
      * 1) 物理的に2行以上になっているデータを一行にまとめる
      *    （町域カナ、町域が複数行にわたっているデータが存在する）
      * 2) 半角カタカナから全角カタカナへ変換する
      * 3) 町域(カナ)のデータを分析して、町域(カナ) と 町域詳細(カナ) に分割する
+     * @param resource $srcFile ソースファイル
+     * @param resource $dstFile デスティネーションファイル
+     * @return array
      */
-    public function normalizeCsvData()
+    protected function normalizeData($srcFile, $dstFile)
     {
-        echo "Normalizing CSV data ... ";
-        echo "from [{$this->getRawCsvFilePath()}] ";
-        echo "to [{$this->getCookedCsvFilePath()}] ... ";
-
-        /** @var $srcFile object 変換元 CSV ファイル */
-        $srcFile = fopen($this->getRawCsvFilePath(), 'r');
-        if (!$srcFile) {
-            echo "done.\n";
-            echo "Failed to open the source CSV file.\n";
-            return;
-        }
-        /** @var $srcFile object 変換先 CSV ファイル */
-        $dstFile = fopen($this->getCookedCsvFilePath(), 'w');
-        if (!$dstFile) {
-            echo "done.\n";
-            echo "Failed to open the normalized CSV file.\n";
-            fclose($srcFile);
-            return;
-        }
-
         /** @var int $lineCountSrc 変換元ライン数 */
         $lineCountSrc = 0;
 
@@ -121,14 +104,8 @@ class ZipBizData extends ZipDataCommon
         while ($line = fgets($srcFile)) {
             $lineCountSrc++;
 
-            // SHIFT JIS --> UTF-8
-            $line = mb_convert_encoding(trim($line), 'UTF-8', 'shift_jis');
-            // 分割
-            $data = explode(',', $line);
-            // 引用符と空白を削除
-            for ($n = self::AG_CODE; $n <= self::CHANGED; $n++) {
-                $data[$n] = trim($data[$n], "\" ");
-            }
+            $data = $this->getDataFromLine($line);
+
             // 半角カタカナ --> 全角カタカナ
             $data[self::COMPANY_NAME_KANA] = str_replace('-', 'ー', $data[self::COMPANY_NAME_KANA]);
             $data[self::COMPANY_NAME_KANA] = mb_convert_kana($data[self::COMPANY_NAME_KANA], 'KV', 'UTF-8');
@@ -148,13 +125,7 @@ class ZipBizData extends ZipDataCommon
             fwrite($dstFile, implode(',', $data) . "\n");
         }
 
-        fclose($srcFile);
-        fclose($dstFile);
-
-        echo "done.\n";
-        $this->showMaxLengths();
-        echo "The source line count = $lineCountSrc\n";
-        echo "\n";
+        return array($lineCountSrc, $lineCountSrc);
     }
 
     /**
@@ -163,159 +134,71 @@ class ZipBizData extends ZipDataCommon
      */
     private function checkMaxLength($data)
     {
-        $this->checkStrLength($data, $this->maxLength, array_keys($this->maxLength));
+        $this->checkStrLength($data, $this->maxLengths, array_keys($this->maxLengths));
     }
 
     /**
      * 最大データ長を表示
      */
-    private function showMaxLengths()
+    protected function showMaxLengths()
     {
         echo "Max lengths of the data\n";
-        foreach(array_keys($this->maxLength) as $key) {
-            echo "-- max length of {$this->labels[$key]} = {$this->maxLength[$key]}\n";
+        foreach(array_keys($this->maxLengths) as $key) {
+            echo "-- max length of {$this->itemLabels[$key]} = {$this->maxLengths[$key]}\n";
         }
     }
 
-    /**
-     * INSERT SQL ファイルの作成
-     */
-    public function createInsertSqlFiles()
+    protected function getInsSql()
     {
-        echo "Writing the INSERT SQL file ...\n";
-
-        // 既存の同名ファイルを削除
-        $this->deleteExistingSqlFiles();
-
-        $srcFile = fopen($this->getCookedCsvFilePath(), 'r');
-        if (!$srcFile) {
-            echo "Failed to open the normalized CSV file.\n";
-            return;
-        }
-        $this->setSqlFileCount(1);
-        $dstFileName = $this->getSqlFilePath($this->getSqlFileCount());
-        $dstFile = fopen($dstFileName, 'w');
-        if (!$dstFile) {
-            echo "Failed to open the SQL file.\n";
-            fclose($srcFile);
-            return;
-        }
-        echo "Writing the INSERT SQL file [$dstFileName] ...";
-
-        $lineCount = 0;
-        $sqlCount = 0;
-        while ($line = fgets($srcFile)) {
-            $data = explode(',', trim($line));
-            $sqlLine =
-                '(' .
-                '"' . $data[self::AG_CODE] . '",' .
-                '"' . $data[self::ZIP_CODE] . '",' .
-                '"' . $data[self::PREF_KANA] . '",' .
-                '"' . $data[self::TOWN_KANA] . '",' .
-                '"' . $data[self::BLOCK_KANA] . '",' .
-                '"' . $data[self::PREF] . '",' .
-                '"' . $data[self::TOWN] . '",' .
-                '"' . $data[self::BLOCK] . '",' .
-                '"' . $data[self::STREET] . '",' .
-                '1,' . // biz
-                $data[self::TYPE] . ',' .
-                $data[self::SERIAL_NO] . ',' .
-                '"' . $data[self::COMPANY_NAME_KANA] . '",' .
-                '"' . $data[self::COMPANY_NAME] . '"' .
-                ')';
-            if ($sqlCount > 0) {
-                if ($sqlCount < LINES_PER_SQL) {
-                    fwrite($dstFile, ",\n");
-                } else {
-                    fwrite($dstFile, ";\n");
-                    $sqlCount = 0;
-                }
-            }
-            if ($lineCount >= LINES_PER_SQL_FILE) {
-                fclose($dstFile);
-                echo "done. \n";
-                $lineCount = 0;
-                $sqlCount = 0;
-                $this->setSqlFileCount($this->getSqlFileCount() + 1);
-                $dstFileName = $this->getSqlFilePath($this->getSqlFileCount());
-                $dstFile = fopen($dstFileName, 'w');
-                if (!$dstFile) {
-                    echo "Failed to open the SQL file.\n";
-                    fclose($srcFile);
-                    return;
-                }
-                echo "done.\n";
-                echo "Writing the INSERT SQL file [$dstFileName] ... ";
-            }
-            if ($sqlCount == 0) {
-                fwrite($dstFile,
-                    "INSERT INTO `zip_data` (`ag_code`, `zip_code`, `pref_kana`, `town_kana`, `block_kana`, `pref`, `town`, `block`, `street`, `biz`, `biz_type`, `biz_ser`, `company_kana`, `company`) VALUES \n"
-                );
-            }
-            fwrite($dstFile, $sqlLine);
-            $lineCount++;
-            $sqlCount++;
-        }
-        fwrite($dstFile, ";\n");
-        fclose($dstFile);
-        echo "done.\n";
-        echo "\n";
+        return
+            'INSERT INTO `zip_data` (' .
+            '`ag_code`, ' .
+            '`zip_code`, ' .
+            '`pref_kana`, ' .
+            '`town_kana`, ' .
+            '`block_kana`, ' .
+            '`pref`, ' .
+            '`town`, ' .
+            '`block`, ' .
+            '`street`, ' .
+            '`biz`, ' .
+            '`biz_type`, ' .
+            '`biz_ser`, ' .
+            '`company_kana`, ' .
+            '`company` '.
+            ') VALUES ' . "\n";
     }
 
-    /**
-     * DELETE SQL ファイルの作成
-     */
-    public function createDeleteSqlFiles()
+    protected function getInsSqlValue($data)
     {
-        echo "Writing the DELETE SQL file ...\n";
-
-        // 既存の同名ファイルを削除
-        $this->deleteExistingSqlFiles();
-
-        $srcFile = fopen($this->getCookedCsvFilePath(), 'r');
-        if (!$srcFile) {
-            echo "Failed to open the normalized CSV file.\n";
-            return;
-        }
-        $this->setSqlFileCount(1);
-        $dstFileName = $this->getSqlFilePath($this->getSqlFileCount());
-        $dstFile = fopen($dstFileName, 'w');
-        if (!$dstFile) {
-            echo "Failed to open the SQL file.\n";
-            fclose($srcFile);
-            return;
-        }
-        echo "Writing the DELETE SQL file [$dstFileName] ... ";
-
-        $lineCount = 0;
-        while ($line = fgets($srcFile)) {
-            $data = explode(',', trim($line));
-            $sqlLine = 'DELETE FROM `zip_data` WHERE ' .
-                '`zip_code` = "' . $data[self::ZIP_CODE] . '" AND ' .
-                '`pref` = "' . $data[self::PREF] . '" AND ' .
-                '`town` = "' . $data[self::TOWN] . '" AND ' .
-                '`block` = "' . $data[self::BLOCK] . '" AND ' .
-                '`street` = "' . $data[self::STREET] . '";' . "\n";
-            if ($lineCount >= LINES_PER_SQL_FILE) {
-                fclose($dstFile);
-                echo "done. \n";
-                $lineCount = 0;
-                $this->setSqlFileCount($this->getSqlFileCount() + 1);
-                $dstFileName = $this->getSqlFilePath($this->getSqlFileCount());
-                $dstFile = fopen($dstFileName, 'w');
-                if (!$dstFile) {
-                    echo "Failed to open the SQL file.\n";
-                    fclose($srcFile);
-                    return;
-                }
-                echo "done.\n";
-                echo "Writing the DELETE SQL file [$dstFileName] ... ";
-            }
-            fwrite($dstFile, $sqlLine);
-            $lineCount++;
-        }
-        fclose($dstFile);
-        echo "done.\n";
-        echo "\n";
+        return
+            '(' .
+            '"' . $data[self::AG_CODE] . '",' .
+            '"' . $data[self::ZIP_CODE] . '",' .
+            '"' . $data[self::PREF_KANA] . '",' .
+            '"' . $data[self::TOWN_KANA] . '",' .
+            '"' . $data[self::BLOCK_KANA] . '",' .
+            '"' . $data[self::PREF] . '",' .
+            '"' . $data[self::TOWN] . '",' .
+            '"' . $data[self::BLOCK] . '",' .
+            '"' . $data[self::STREET] . '",' .
+            '1,' . // biz
+            $data[self::TYPE] . ',' .
+            $data[self::SERIAL_NO] . ',' .
+            '"' . $data[self::COMPANY_NAME_KANA] . '",' .
+            '"' . $data[self::COMPANY_NAME] . '"' .
+            ')';
     }
+
+    protected function getDelSql($data)
+    {
+        return
+            'DELETE FROM `zip_data` WHERE ' .
+            '`zip_code` = "' . $data[self::ZIP_CODE] . '" AND ' .
+            '`pref` = "' . $data[self::PREF] . '" AND ' .
+            '`town` = "' . $data[self::TOWN] . '" AND ' .
+            '`block` = "' . $data[self::BLOCK] . '" AND ' .
+            '`street` = "' . $data[self::STREET] . '";' . "\n";
+    }
+
 }

@@ -181,6 +181,69 @@ class ZipDataCommon
     }
 
     /**
+     * CSV データを正規化する
+     */
+    public function normalizeCsvData()
+    {
+        echo "Normalizing CSV data ... ";
+        echo "from [{$this->getRawCsvFilePath()}] ";
+        echo "to [{$this->getCookedCsvFilePath()}] ... ";
+
+        /** @var $srcFile object 変換元 CSV ファイル */
+        $srcFile = fopen($this->getRawCsvFilePath(), 'r');
+        if (!$srcFile) {
+            echo "\n";
+            echo "Failed to open the source CSV file.\n";
+            return;
+        }
+        /** @var $srcFile object 変換先 CSV ファイル */
+        $dstFile = fopen($this->getCookedCsvFilePath(), 'w');
+        if (!$dstFile) {
+            echo "\n";
+            echo "Failed to open the normalized CSV file.\n";
+            fclose($srcFile);
+            return;
+        }
+
+        // データを正規化
+        list($lineCountSrc, $lineCountDst) = $this->normalizeData($srcFile, $dstFile);
+
+        fclose($srcFile);
+        fclose($dstFile);
+
+        echo "done.\n";
+        $this->showMaxLengths();
+        echo "The source line count = $lineCountSrc\n";
+        echo "The destination line count = $lineCountDst\n";
+        $diff = $lineCountSrc - $lineCountDst;
+        echo "Unified line count = $diff\n";
+        echo "\n";
+    }
+
+    protected function normalizeData($srcFile, $dstFile)
+    {
+        return array(0, 0);
+    }
+
+    protected function getDataFromLine($line)
+    {
+        // SHIFT JIS --> UTF-8
+        $line = mb_convert_encoding(trim($line), 'UTF-8', 'shift_jis');
+        // カンマで分割
+        $data = explode(',', $line);
+        // 引用符と空白を削除
+        for ($n = 0; $n < count($data); $n++) {
+            $data[$n] = trim($data[$n], "\" ");
+        }
+        return $data;
+    }
+
+    protected function showMaxLengths()
+    {
+
+    }
+
+    /**
      * 文字列の長さを既存の最大値と比べて、最大値を更新する
      * @param array $srcData
      * @param array $maxLenData
@@ -194,4 +257,137 @@ class ZipDataCommon
             }
         }
     }
+
+    /**
+     * INSERT SQL ファイルの作成
+     */
+    public function createInsertSqlFiles()
+    {
+        echo "Writing the INSERT SQL file ...\n";
+
+        // 既存の同名ファイルを削除
+        $this->deleteExistingSqlFiles();
+
+        $srcFile = fopen($this->getCookedCsvFilePath(), 'r');
+        if (!$srcFile) {
+            echo "Failed to open the normalized CSV file.\n";
+            return;
+        }
+        $this->setSqlFileCount(1);
+        $dstFileName = $this->getSqlFilePath($this->getSqlFileCount());
+        $dstFile = fopen($dstFileName, 'w');
+        if (!$dstFile) {
+            echo "Failed to open the SQL file.\n";
+            fclose($srcFile);
+            return;
+        }
+        echo "Writing the INSERT SQL file [$dstFileName] ... ";
+
+        $lineCount = 0;
+        $sqlCount = 0;
+        while ($line = fgets($srcFile)) {
+            $data = explode(',', trim($line));
+            $sqlLine = $this->getInsSqlValue($data);
+            if ($sqlCount > 0) {
+                if ($sqlCount < LINES_PER_SQL) {
+                    fwrite($dstFile, ",\n");
+                } else {
+                    fwrite($dstFile, ";\n");
+                    $sqlCount = 0;
+                }
+            }
+            if ($lineCount >= LINES_PER_SQL_FILE) {
+                fclose($dstFile);
+                echo "done. \n";
+                $lineCount = 0;
+                $sqlCount = 0;
+                $this->setSqlFileCount($this->getSqlFileCount() + 1);
+                $dstFileName = $this->getSqlFilePath($this->getSqlFileCount());
+                $dstFile = fopen($dstFileName, 'w');
+                if (!$dstFile) {
+                    echo "Failed to open the SQL file.\n";
+                    fclose($srcFile);
+                    return;
+                }
+                echo "Writing the INSERT SQL file [$dstFileName] ... ";
+            }
+            if ($sqlCount == 0) {
+                fwrite($dstFile, $this->getInsSql());
+            }
+            fwrite($dstFile, $sqlLine);
+            $lineCount++;
+            $sqlCount++;
+        }
+        fwrite($dstFile, ";\n");
+        fclose($dstFile);
+        echo "done.\n";
+        echo "\n";
+    }
+
+    protected function getInsSql()
+    {
+        return '';
+    }
+
+    protected function getInsSqlValue($data)
+    {
+        return '';
+    }
+
+    /**
+     * DELETE SQL ファイルの作成
+     */
+    public function createDeleteSqlFiles()
+    {
+        echo "Writing the DELETE SQL file ...\n";
+
+        // 既存の同名ファイルを削除
+        $this->deleteExistingSqlFiles();
+
+        $srcFile = fopen($this->getCookedCsvFilePath(), 'r');
+        if (!$srcFile) {
+            echo "Failed to open the normalized CSV file.\n";
+            return;
+        }
+        $this->setSqlFileCount(1);
+        $dstFileName = $this->getSqlFilePath($this->getSqlFileCount());
+        $dstFile = fopen($dstFileName, 'w');
+        if (!$dstFile) {
+            echo "Failed to open the SQL file.\n";
+            fclose($srcFile);
+            return;
+        }
+        echo "Writing the DELETE SQL file [$dstFileName] ... ";
+
+        $lineCount = 0;
+        while ($line = fgets($srcFile)) {
+            $data = explode(',', trim($line));
+            $sqlLine = $this->getDelSql($data);
+            if ($lineCount >= LINES_PER_SQL_FILE) {
+                fclose($dstFile);
+                echo "done. \n";
+                $lineCount = 0;
+                $this->setSqlFileCount($this->getSqlFileCount() + 1);
+                $dstFileName = $this->getSqlFilePath($this->getSqlFileCount());
+                $dstFile = fopen($dstFileName, 'w');
+                if (!$dstFile) {
+                    echo "Failed to open the SQL file.\n";
+                    fclose($srcFile);
+                    return;
+                }
+                echo "Writing the DELETE SQL file [$dstFileName] ... ";
+            }
+            fwrite($dstFile, $sqlLine);
+            $lineCount++;
+        }
+        fclose($dstFile);
+        echo "done.\n";
+        echo "\n";
+    }
+
+    protected function getDelSql($data)
+    {
+        return '';
+    }
+
 }
