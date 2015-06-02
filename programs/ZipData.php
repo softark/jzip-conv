@@ -243,7 +243,7 @@ class ZipData extends ZipDataCommon
     protected function showMaxLengths()
     {
         echo "Max lengths of the data\n";
-        foreach(array_keys($this->maxLengths) as $key) {
+        foreach (array_keys($this->maxLengths) as $key) {
             echo "-- max length of {$this->itemLabels[$key]} = {$this->maxLengths[$key]}\n";
         }
     }
@@ -317,7 +317,7 @@ class ZipData extends ZipDataCommon
         }
         while ($line = fgets($srcFile)) {
             $words = explode(',', $line);
-            $kanaDic->register('pref', '', trim($words[self::PREF], '"'),trim($words[self::PREF_KANA], '"'));
+            $kanaDic->register('pref', '', trim($words[self::PREF], '"'), trim($words[self::PREF_KANA], '"'));
             $agCode = trim($words[self::AG_CODE], '"');
             $kanaDic->register('town', $agCode, trim($words[self::TOWN], '"'), trim($words[self::TOWN_KANA], '"'));
             $kanaDic->register('block', $agCode, trim($words[self::BLOCK], '"'), trim($words[self::BLOCK_KANA], '"'));

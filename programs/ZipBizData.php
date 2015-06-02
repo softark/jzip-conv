@@ -143,7 +143,7 @@ class ZipBizData extends ZipDataCommon
     protected function showMaxLengths()
     {
         echo "Max lengths of the data\n";
-        foreach(array_keys($this->maxLengths) as $key) {
+        foreach (array_keys($this->maxLengths) as $key) {
             echo "-- max length of {$this->itemLabels[$key]} = {$this->maxLengths[$key]}\n";
         }
     }
@@ -165,7 +165,7 @@ class ZipBizData extends ZipDataCommon
             '`biz_type`, ' .
             '`biz_ser`, ' .
             '`company_kana`, ' .
-            '`company` '.
+            '`company` ' .
             ') VALUES ' . "\n";
     }
 

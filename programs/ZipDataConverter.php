@@ -57,18 +57,10 @@ class ZipDataConverter
     private function processKenAll()
     {
         $zipDataAll = new ZipData($this->dataDir, 'KEN_ALL');
-        if ($zipDataAll->hasRawCsvFile()) {
-            echo "Zip data (all) ... converting ...\n";
-            echo "\n";
-            $zipDataAll->normalizeCsvData();
+        if ($zipDataAll->processData(false, 'all')) {
             $zipDataAll->updateKanaDic();
-            $zipDataAll->createInsertSqlFiles();
             $this->masterSqlFiles = array_merge($this->masterSqlFiles, $zipDataAll->getSqlFileNames());
-            echo "Zip data (all) ... conversion completed.\n";
-        } else {
-            echo "Zip data (all) ... no data.\n";
         }
-        echo "\n";
     }
 
     /**
@@ -77,18 +69,10 @@ class ZipDataConverter
     private function processDelete()
     {
         $zipDataDelete = new ZipData($this->dataDir, 'DEL_' . $this->yearMonth);
-        if ($zipDataDelete->hasRawCsvFile()) {
-            echo "Zip data (deleted) ... converting ...\n";
-            echo "\n";
-            $zipDataDelete->normalizeCsvData();
+        if ($zipDataDelete->processData(false, 'del')) {
             $zipDataDelete->updateKanaDic();
-            $zipDataDelete->createDeleteSqlFiles();
             $this->updateSqlFilePaths = array_merge($this->updateSqlFilePaths, $zipDataDelete->getSqlFilePaths());
-            echo "Zip data (deleted) ... conversion completed.\n";
-        } else {
-            echo "Zip data (deleted) ... no data.\n";
         }
-        echo "\n";
     }
 
     /**
@@ -97,18 +81,10 @@ class ZipDataConverter
     private function processAdd()
     {
         $zipDataAdd = new ZipData($this->dataDir, 'ADD_' . $this->yearMonth);
-        if ($zipDataAdd->hasRawCsvFile()) {
-            echo "Zip data (added) ... converting ...\n";
-            echo "\n";
-            $zipDataAdd->normalizeCsvData();
+        if ($zipDataAdd->processData(false, 'add')) {
             $zipDataAdd->updateKanaDic();
-            $zipDataAdd->createInsertSqlFiles();
             $this->updateSqlFilePaths = array_merge($this->updateSqlFilePaths, $zipDataAdd->getSqlFilePaths());
-            echo "Zip data (added) ... conversion completed.\n";
-        } else {
-            echo "Zip data (added) ... no data.\n";
         }
-        echo "\n";
     }
 
     /**
@@ -117,17 +93,9 @@ class ZipDataConverter
     private function processBizAll()
     {
         $zipBizDataAll = new ZipBizData($this->dataDir, 'JIGYOSYO');
-        if ($zipBizDataAll->hasRawCsvFile()) {
-            echo "Business zip data (all) ... converting ...\n";
-            echo "\n";
-            $zipBizDataAll->normalizeCsvData();
-            $zipBizDataAll->createInsertSqlFiles();
+        if ($zipBizDataAll->processData(true, 'all')) {
             $this->masterSqlFiles = array_merge($this->masterSqlFiles, $zipBizDataAll->getSqlFileNames());
-            echo "Business zip data (all) ... conversion completed.\n";
-        } else {
-            echo "Business zip data (all) ... no data.\n";
         }
-        echo "\n";
     }
 
     /**
@@ -136,17 +104,9 @@ class ZipDataConverter
     private function processBizDelete()
     {
         $zipBizDataDelete = new ZipBizData($this->dataDir, 'JDEL' . $this->yearMonth);
-        if ($zipBizDataDelete->hasRawCsvFile()) {
-            echo "Business zip data (deleted) ... converting ...\n";
-            echo "\n";
-            $zipBizDataDelete->normalizeCsvData();
-            $zipBizDataDelete->createDeleteSqlFiles();
+        if ($zipBizDataDelete->processData(true, 'del')) {
             $this->updateSqlFilePaths = array_merge($this->updateSqlFilePaths, $zipBizDataDelete->getSqlFilePaths());
-            echo "Business zip data (deleted) ... conversion completed.\n";
-        } else {
-            echo "Business zip data (deleted) ... no data.\n";
         }
-        echo "\n";
     }
 
     /**
@@ -155,17 +115,9 @@ class ZipDataConverter
     private function processBizAdd()
     {
         $zipBizDataAdd = new ZipBizData($this->dataDir, 'JADD' . $this->yearMonth);
-        if ($zipBizDataAdd->hasRawCsvFile()) {
-            echo "Business zip data (added) ... converting ...\n";
-            echo "\n";
-            $zipBizDataAdd->normalizeCsvData();
-            $zipBizDataAdd->createInsertSqlFiles();
+        if ($zipBizDataAdd->processData(true, 'add')) {
             $this->updateSqlFilePaths = array_merge($this->updateSqlFilePaths, $zipBizDataAdd->getSqlFilePaths());
-            echo "Business zip data (added) ... conversion completed.\n";
-        } else {
-            echo "Business zip data (added) ... no data.\n";
         }
-        echo "\n";
     }
 
     /**

@@ -117,6 +117,11 @@ class KanaDic
         }
     }
 
+    /**
+     * @param $agCode string 自治体コード
+     * @param $name string 名前
+     * @return string
+     */
     private static function getCodeKey($agCode, $name)
     {
         return $agCode . ':' . $name;
@@ -168,7 +173,6 @@ class KanaDic
                 fclose($dicFile);
             } else {
                 fputs(STDERR, "Failed to read kana dictionary [$fileName]\n");
-                exit(-1);
             }
         }
         return $dic;

@@ -175,6 +175,28 @@ class ZipDataCommon
         ZipDataConverter::makeReadyDir($workDir, "working directory");
     }
 
+    public function processData($biz, $mode)
+    {
+        $data = $biz ? 'Biz zip data' : 'Zip data';
+        if ($this->hasRawCsvFile()) {
+            echo "$data ($mode) ... converting ...\n";
+            echo "\n";
+            $this->normalizeCsvData();
+            if ($mode === 'all' || $mode === 'add') {
+                $this->createInsertSqlFiles();
+            } else {
+                $this->createDeleteSqlFiles();
+            }
+            echo "$data ($mode) ... conversion completed.\n";
+            echo "\n";
+            return true;
+        } else {
+            echo "$data ($mode) ... no data.\n";
+            echo "\n";
+            return false;
+        }
+    }
+
     /**
      * CSV データを正規化する
      */
@@ -399,5 +421,4 @@ class ZipDataCommon
     {
         return '';
     }
-
 }

@@ -1,8 +1,8 @@
 <?php
+
 /**
  * Class ZipDataDownloader
  */
-
 class ZipDataDownloader
 {
     /**
