@@ -82,12 +82,12 @@ class KanaDic
                 $kana = $this->prefDic[$name];
             }
         } else if ($type == 'town') {
-            $key = $agCode . ':' . $name;
+            $key = self::getCodeKey($agCode, $name);
             if (isset($this->townDic[$key])) {
                 $kana = $this->townDic[$key];
             }
         } else if ($type == 'block') {
-            $key = $agCode . ':' . $name;
+            $key = self::getCodeKey($agCode, $name);
             if (isset($this->blockDic[$key])) {
                 $kana = $this->blockDic[$key];
             }
@@ -108,13 +108,18 @@ class KanaDic
             if ($type == 'pref') {
                 $this->prefDic[$name] = $kana;
             } else if ($type == 'town') {
-                $key = $agCode . ':' . $name;
+                $key = self::getCodeKey($agCode, $name);
                 $this->townDic[$key] = $kana;
             } else if ($type == 'block') {
-                $key = $agCode . ':' . $name;
+                $key = self::getCodeKey($agCode, $name);
                 $this->blockDic[$key] = $kana;
             }
         }
+    }
+
+    private static function getCodeKey($agCode, $name)
+    {
+        return $agCode . ':' . $name;
     }
 
     /**
