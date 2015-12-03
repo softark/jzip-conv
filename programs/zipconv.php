@@ -18,7 +18,19 @@ function showSyntaxError()
 }
 
 /** @var $yearMonth string 年月 */
-$yearMonth = substr(date('Ym'), 2, 4);
+$yearMonth = '';
+$y = intval(substr(date('Y'), 2));
+$m = intval(date('m'));
+$d = intval(date('d'));
+if ($d < 25) {
+    $m--;
+    if ($m < 1) {
+        $m = 12;
+        $y--;
+    }
+}
+$yearMonth = sprintf('%02d%02d', $y, $m);
+
 
 /** @var $downloadMode string ダウンロード・モード */
 $downloadMode = 'diff';
