@@ -70,6 +70,9 @@ class ZipDataDownloader
         echo "done.\n\n";
     }
 
+    /**
+     * データディレクトリを準備する
+     */
     private function prepareDataDir()
     {
         if (!file_exists($this->dataDir)) {
@@ -80,12 +83,17 @@ class ZipDataDownloader
         }
     }
 
-    private function downloadDataFile($baseUrl, $file)
+    /**
+     * ダウンロードを実行する
+     * @param $srcUrl string ソース URL
+     * @param $file string ファイル名（拡張子なし）
+     */
+    private function downloadDataFile($srcUrl, $file)
     {
         $fileName = $file . self::FILE_EXT;
         $filePath = $this->dataDir . DIRECTORY_SEPARATOR . $fileName;
         echo "$file : downloading ... ";
-        if (!copy($baseUrl . $fileName, $filePath)) {
+        if (!copy($srcUrl . $fileName, $filePath)) {
             fputs(STDERR, "Failed to download the data file [$fileName]\n");
             exit(-1);
         }

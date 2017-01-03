@@ -17,19 +17,20 @@ MySQL のデータベースを作成(または保守)するための SQL ファ�
 言語および実行環境
 ------------------
 
-+ PHP 5.X (CLI)
++ PHP 5.X (CLI) or PHP 7.x (CLI)
 + Windows
 
 ディレクトリとファイル
 --------------------
 
     + programs                   ... プログラム
-        main.php                 ... メインの実行ファイル
+        zipconv.php              ... メインの実行ファイル
+        ZipDataDownloader.php    ... 郵便番号データダウンローダ
         ZipDataConverter.php     ... コンバータ
         ZipDataCommon.php        ... 郵便番号データ(基底)
-        ZipData                  ... 郵便番号データ(一般)
-        ZipBizData               ... 郵便番号データ(大口事業所個別番号データ)
-        KanaDic                  ... 振り仮名辞書
+        ZipData.php              ... 郵便番号データ(一般)
+        ZipBizData.php           ... 郵便番号データ(大口事業所個別番号データ)
+        KanaDic.php              ... 振り仮名辞書データ
 
     + sqls                       ... SQL
         zip_data_init.sql        ... 初期テーブル作成
@@ -68,42 +69,26 @@ MySQL のデータベースを作成(または保守)するための SQL ファ�
 
 1. データベースの初期化  
     sqls/zip_data_init.sql を DB にインポートして、空っぽのテーブルを作成する
-2. 郵便番号データ
-    1. 最新の ken_all.lzh または ken_all.zip を入手する
-    2. KEN_ALL.CSV を解凍して、data/YYMM ディレクトリに配置する
-3. 大口事業所個別番号データ
-    1. 最新の jigyosyo.lzh または jigyosyo.zip を入手する
-    2. JIGYOSYO.CSV を解凍して、data/YYMM ディレクトリに配置する
-4. data/YYMM ディレクトリを指定して(*1)、programs/main.php を実行する
-5. outputs/masters/YYMM ディレクトリに生成された全ての SQL を DB にインポートする
-6. フラグの更新(*2)  
+2. programs/zipconv.php を実行する
+    + 引数に、年月 YYMM と ダウンロードモード "all" を指定する
+        + 例えば、2016年12月なら、"php zipconv.php 1612 all"
+3. outputs/masters/YYMM ディレクトリに生成された全ての SQL を DB にインポートする
+4. フラグの更新(*)  
     sqls/zip_data_flag_update.sql を DB にインポートして、フラグを更新する
 
-+ (*1) 「data/YYMM ディレクトリの指定」は、programs/main.php を直接書き換えて行う(手抜きでごめん)。
-+ (*2) 「フラグの更新」は、データをインポートした場合に、必ず実行する必要がある。
++ (*) 「フラグの更新」は、データをインポートした場合に、必ず実行する必要がある。
 
 プログラムの使い方 (2) 月次データ更新
 -----------------------------------
 
-1. 郵便番号データ : 削除データ
-    1. del_YYMM.lzh または del_YYMM.zip を入手する
-    2. DEL_YYMM.CSV を解凍して、data/YYMM ディレクトリに配置する
-2. 郵便番号データ : 追加データ
-    1. add_YYMM.lzh または add_YYMM.zip を入手する
-    2. ADD_YYMM.CSV を解凍して、data/YYMM ディレクトリに配置する
-3. 大口事業所個別番号データ : 削除データ
-    1. jdelYYMM.lzh または jdelYYMM.zip を入手する
-    2. JDELYYMM.CSV を解凍して、data/YYMM ディレクトリに配置する
-4. 大口事業所個別番号データ : 追加データ
-    1. jaddYYMM.lzh または jaddYYMM.zip を入手する
-    2. JADDYYMM.CSV を解凍して、data/YYMM ディレクトリに配置する
-5. data/YYMM ディレクトリを指定して(*1)、programs/main.php を実行する
-6. outputs/updates ディレクトリに生成された update_YYMM.sql を DB にインポートする
-7. フラグの更新(*2)  
+1. programs/zipconv.php を実行する
+    + 引数に、年月 YYMM と ダウンロードモード "diff" を指定する
+        + 例えば、2016年12月なら、"php zipconv.php 1612 diff"
+2. outputs/updates ディレクトリに生成された update_YYMM.sql を DB にインポートする
+3. フラグの更新(*)  
     sqls/zip_data_flag_update.sql を DB にインポートして、フラグを更新する
 
-+ (*1) 「data/YYMM ディレクトリの指定」は、programs/main.php を直接書き換えて行う(手抜きでごめん)。
-+ (*2) 「フラグの更新」は、データをインポートした場合に、必ず実行する必要がある。
++ (*) 「フラグの更新」は、データをインポートした場合に、必ず実行する必要がある。
 
 月次データ更新をするためには、初期データ作成後、その前の月まで、一度も欠かさずに
 月次データ更新をしていなければならない。

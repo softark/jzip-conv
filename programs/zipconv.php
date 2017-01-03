@@ -18,10 +18,12 @@ function showSyntaxError()
 }
 
 /** @var $yearMonth string 年月 */
+// 引数省略時は、現在の年月
 $yearMonth = '';
 $y = intval(substr(date('Y'), 2));
 $m = intval(date('m'));
 $d = intval(date('d'));
+// 月末以外は、前の月を指定したとする
 if ($d < 25) {
     $m--;
     if ($m < 1) {
@@ -33,12 +35,13 @@ $yearMonth = sprintf('%02d%02d', $y, $m);
 
 
 /** @var $downloadMode string ダウンロード・モード */
+// 引数省略時は "diff"
 $downloadMode = 'diff';
 
 // 引数から年月を取得
 if (isset($argv[1])) {
     $yearMonth = $argv[1];
-    if (!preg_match('/^[01]\d[01]\d$/', $yearMonth)) {
+    if (!preg_match('/^[12]\d[01]\d$/', $yearMonth)) {
         showSyntaxError();
         exit(-1);
     }
