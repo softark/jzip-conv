@@ -138,6 +138,7 @@ class ZipDataConverter
                     exit(-1);
                 }
             }
+            $this->appendHist($dstPath);
             echo "done.\n";
             echo "\n";
         }
@@ -177,8 +178,16 @@ class ZipDataConverter
                     exit(-1);
                 }
             }
+            $this->appendHist($dstFileName);
             echo "done.\n";
             echo "\n";
         }
+    }
+
+    private function appendHist($sqlFile)
+    {
+        $file = fopen($sqlFile, "a");
+        fwrite($file, "\ninsert into `zip_hist` (`ym`) values (\"$this->yearMonth\");\n");
+        fclose($file);
     }
 }
