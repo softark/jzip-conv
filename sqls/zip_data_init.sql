@@ -54,3 +54,14 @@ CREATE TABLE IF NOT EXISTS `zip_data` (
   KEY `biz_flags` (`biz`, `biz_type`, `biz_ser`),
   KEY `flags` (`m_zips`, `m_banchis`, `chomes`, `m_blocks`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
+DROP TABLE IF EXISTS `zip_hist`;
+CREATE TABLE `zip_hist` (
+  `id` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `ym` varchar(8) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+ALTER TABLE `zip_hist`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `created_at` (`created_at`);
