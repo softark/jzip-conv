@@ -71,7 +71,7 @@ const LINES_PER_SQL = 40;
 
 // 1 SQL ファイルあたりの行数 ... アップロード可能なファイル・サイズに合わせて調節
 // 31000 ... 約 7 MB - 7.5 MB
-const LINES_PER_SQL_FILE = 31000;
+const LINES_PER_SQL_FILE = 20000;
 
 // ベースになるデータ・ディレクトリ
 define('DATA_DIR', ".." . DIRECTORY_SEPARATOR . "data");
