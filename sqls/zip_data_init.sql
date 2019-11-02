@@ -57,11 +57,10 @@ CREATE TABLE IF NOT EXISTS `zip_data` (
 
 DROP TABLE IF EXISTS `zip_hist`;
 CREATE TABLE `zip_hist` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY  KEY,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `ym` varchar(8) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 ALTER TABLE `zip_hist`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `created_at` (`created_at`);
