@@ -166,9 +166,13 @@ class KanaDic
             if ($dicFile = fopen($fileName, 'r')) {
                 while ($line = fgets($dicFile)) {
                     $words = explode(',', $line);
-                    $key = trim($words[0], '"');
-                    $value = trim($words[1], "\"\n");
-                    $dic[$key] = $value;
+                    if (count($words) == 2) {
+                        $key = trim($words[0], '"');
+                        $value = trim($words[1], "\"\n");
+                        $dic[$key] = $value;
+                    } else {
+                        fputs(STDERR, "Invalid line in $type dictionary [$line] ... ignored.\n");
+                    }
                 }
                 fclose($dicFile);
             } else {

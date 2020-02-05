@@ -14,7 +14,7 @@ function showSyntaxError()
     fputs(STDERR, "Invalid parameter(s).\n\n");
     fputs(STDERR, "Usage: php zipconv.php <YearAndMonth> <DownloadMode>\n");
     fputs(STDERR, "  <YearAndMonth> should be in the format of 'YYMM' ... defaults to the current year and month\n");
-    fputs(STDERR, "  <DownloadMode> should be 'diff', 'all' or 'full' ... defaults to 'diff'\n");
+    fputs(STDERR, "  <DownloadMode> should be 'diff', 'all' or 'full' ( = 'diff' + 'all') ... defaults to 'diff'\n");
 }
 
 /** @var $yearMonth string 年月 */
