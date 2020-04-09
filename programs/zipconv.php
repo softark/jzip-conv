@@ -12,9 +12,20 @@
 function showSyntaxError()
 {
     fputs(STDERR, "Invalid parameter(s).\n\n");
+    showUsage();
+}
+
+function showNotAvailableError()
+{
+    fputs(STDERR, "Zip data not available for the requested period.\n\n");
+    showUsage();
+}
+
+function showUsage()
+{
     fputs(STDERR, "Usage: php zipconv.php <YearAndMonth> <DownloadMode>\n");
-    fputs(STDERR, "  <YearAndMonth> should be in the format of 'YYMM' ... defaults to the current year and month\n");
-    fputs(STDERR, "  <DownloadMode> should be 'diff', 'all' or 'full' ( = 'diff' + 'all') ... defaults to 'diff'\n");
+    fputs(STDERR, "  <YearAndMonth> should be in the format of 'YYMM' ... defaults to the latest available period\n");
+    fputs(STDERR, "  <DownloadMode> should be 'diff', 'all' or 'full' ( 'full' = 'diff' + 'all') ... defaults to 'diff'\n");
 }
 
 /** @var $yearMonth string 年月 */
@@ -40,21 +51,22 @@ $downloadMode = 'diff';
 
 // 引数から年月を取得
 if (isset($argv[1])) {
-    $yearMonth = $argv[1];
-    if (!preg_match('/^[12]\d[01]\d$/', $yearMonth)) {
+    $ym = $argv[1];
+    if (!preg_match('/^[12]\d[01]\d$/', $ym)) {
         showSyntaxError();
         exit(-1);
     }
-    $year = intval(substr($yearMonth, 0, 2));
-    $month = intval(substr($yearMonth, 2, 2));
+    $year = intval(substr($ym, 0, 2));
+    $month = intval(substr($ym, 2, 2));
     if ($month < 1 || $month > 12) {
         showSyntaxError();
         exit(-1);
     }
-    if (200000 + $year * 100 + $month > intval(date('Ym'))) {
-        showSyntaxError();
+    if ($year * 100 + $month > intval($yearMonth)) {
+        showNotAvailableError();
         exit(-1);
     }
+    $yearMonth = $ym;
 }
 
 // 引数からダウンロード・モードを取得
