@@ -129,15 +129,22 @@ class ZipDataConverter
             echo "Master SQL file ... copying ... ";
             $masterDir = MASTERS_DIR . DIRECTORY_SEPARATOR . $this->yearMonth;
             self::makeReadyDir($masterDir, "master directory");
+            $no = 1;
             foreach ($this->masterSqlFiles as $src) {
                 $srcPath = $this->dataDir . DIRECTORY_SEPARATOR . WORK_SUB_DIR . DIRECTORY_SEPARATOR . $src;
-                $dstPath = $masterDir . DIRECTORY_SEPARATOR . $src;
+                $dstPath = $masterDir . DIRECTORY_SEPARATOR . sprintf('%02d-', $no) . $src;
                 if (!copy($srcPath, $dstPath)) {
                     echo "\n";
                     fputs(STDERR, "Failed to copy a file [$srcPath] to [$dstPath]\n");
                     exit(-1);
                 }
+                if ($no == 1) {
+                    $this->prependDataInit($dstPath);
+                    $prependDone = true;
+                }
+                $no++;
             }
+            $this->appendFlagUpdate($dstPath);
             $this->appendHist($dstPath);
             echo "done.\n";
             echo "\n";
@@ -178,15 +185,50 @@ class ZipDataConverter
                     exit(-1);
                 }
             }
+            $this->appendFlagUpdate($dstFileName);
             $this->appendHist($dstFileName);
             echo "done.\n";
             echo "\n";
         }
     }
 
-    private function appendHist($sqlFile)
+    /**
+     * @param $dstFile
+     * データ初期化 SQL を先頭に挿入する
+     */
+    private function prependDataInit($dstFile)
     {
-        $file = fopen($sqlFile, "a");
+        $srcFile = SQLS_DIR . DIRECTORY_SEPARATOR . "zip_data_init.sql";
+        $prepend = file_get_contents($srcFile);
+        $contents = file_get_contents($dstFile);
+        if (file_put_contents($dstFile, $prepend . "\n" . $contents) === false) {
+            echo "\n";
+            fputs(STDERR, "Failed to prepend the initializing SQL [$dstFile]\n");
+            exit(-1);
+        }
+    }
+
+    /**
+     * @param $dstFile
+     * フラグ更新 SQL を末尾に追加する
+     */
+    private function appendFlagUpdate($dstFile)
+    {
+        $srcFile = SQLS_DIR . DIRECTORY_SEPARATOR . "zip_data_flag_update.sql";
+        if (file_put_contents($dstFile, file_get_contents($srcFile), FILE_APPEND) === false) {
+            echo "\n";
+            fputs(STDERR, "Failed to append the flag updating SQLs [$dstFile]\n");
+            exit(-1);
+        }
+    }
+
+    /**
+     * @param $dstFile
+     * 履歴を更新する SQL を末尾に追加する
+     */
+    private function appendHist($dstFile)
+    {
+        $file = fopen($dstFile, "a");
         fwrite($file, "\ninsert into `zip_hist` (`ym`) values (\"$this->yearMonth\");\n");
         fclose($file);
     }
