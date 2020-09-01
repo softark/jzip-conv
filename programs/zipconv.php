@@ -23,9 +23,9 @@ function showNotAvailableError()
 
 function showUsage()
 {
-    fputs(STDERR, "Usage: php zipconv.php <YearAndMonth> <DownloadMode>\n");
+    fputs(STDERR, "Usage: php zipconv.php <DownloadMode> <YearAndMonth>\n");
+    fputs(STDERR, "  <DownloadMode> should be 'diff', 'all' or 'both' ( 'both' = 'diff' + 'all') ... defaults to 'diff'\n");
     fputs(STDERR, "  <YearAndMonth> should be in the format of 'YYMM' ... defaults to the latest available period\n");
-    fputs(STDERR, "  <DownloadMode> should be 'diff', 'all' or 'full' ( 'full' = 'diff' + 'all') ... defaults to 'diff'\n");
 }
 
 /** @var $yearMonth string 年月 */
@@ -49,9 +49,18 @@ $yearMonth = sprintf('%02d%02d', $y, $m);
 // 引数省略時は "diff"
 $downloadMode = 'diff';
 
-// 引数から年月を取得
+// 引数からダウンロード・モードを取得
 if (isset($argv[1])) {
-    $ym = $argv[1];
+    $downloadMode = $argv[1];
+    if ($downloadMode !== 'diff' && $downloadMode !== 'all' && $downloadMode !== 'both') {
+        showSyntaxError();
+        exit(-1);
+    }
+}
+
+// 引数から年月を取得
+if (isset($argv[2])) {
+    $ym = $argv[2];
     if (!preg_match('/^[12]\d[01]\d$/', $ym)) {
         showSyntaxError();
         exit(-1);
@@ -67,15 +76,6 @@ if (isset($argv[1])) {
         exit(-1);
     }
     $yearMonth = $ym;
-}
-
-// 引数からダウンロード・モードを取得
-if (isset($argv[2])) {
-    $downloadMode = $argv[2];
-    if ($downloadMode !== 'diff' && $downloadMode !== 'all' && $downloadMode !== 'full') {
-        showSyntaxError();
-        exit(-1);
-    }
 }
 
 // INSERT 文の行数
@@ -102,6 +102,8 @@ define('MASTERS_DIR', OUTPUTS_DIR . DIRECTORY_SEPARATOR . "masters");
 
 // 更新データ・ディレクトリ
 define('UPDATES_DIR', OUTPUTS_DIR . DIRECTORY_SEPARATOR . "updates");
+
+define('SQLS_DIR', ".." . DIRECTORY_SEPARATOR . "sqls");
 
 // データ・ダウンローダ・クラス
 require_once('ZipDataDownloader.php');

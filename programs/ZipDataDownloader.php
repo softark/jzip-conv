@@ -57,13 +57,13 @@ class ZipDataDownloader
     {
         echo "Downloading data files ...\n";
         $this->prepareDataDir();
-        if ($this->mode === 'diff' || $this->mode === 'full') {
+        if ($this->mode === 'diff' || $this->mode === 'both') {
             $this->downloadDataFile(self::SOURCE_URL, self::ADD_DATA_PREFIX . $this->yearMonth);
             $this->downloadDataFile(self::SOURCE_URL, self::DEL_DATA_PREFIX . $this->yearMonth);
             $this->downloadDataFile(self::JG_SOURCE_URL, self::JG_ADD_DATA_PREFIX . $this->yearMonth);
             $this->downloadDataFile(self::JG_SOURCE_URL, self::JG_DEL_DATA_PREFIX . $this->yearMonth);
         }
-        if ($this->mode === 'all' || $this->mode === 'full') {
+        if ($this->mode === 'all' || $this->mode === 'both') {
             $this->downloadDataFile(self::SOURCE_URL, self::KEN_ALL_DATA);
             $this->downloadDataFile(self::JG_SOURCE_URL, self::JG_ALL_DATA);
         }
