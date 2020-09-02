@@ -16,9 +16,9 @@ class ZipDataConverter
     private $dataDir;
 
     /**
-     * @var array 更新用 SQL ファイル名
+     * @var array マスター SQL ファイル名
      */
-    private $masterSqlFiles = array();
+    private $masterSqlFilePaths = array();
 
     /**
      * @var array 更新用 SQL ファイル名
@@ -28,11 +28,23 @@ class ZipDataConverter
     /**
      * コンストラクタ
      * @param string $yearMonth 年月
+     * @param string $dir データ・ディレクトリ
      */
-    public function __construct($yearMonth)
+    public function __construct($yearMonth, $dir)
     {
+        if (!preg_match('/(\d\d)([01]\d)/', $yearMonth, $matches)) {
+            throw  new Exception('Invalid parameter specified for year and month.');
+        }
+        $m = intval($matches[2]);
+        if ($m < 1 || $m > 12 ) {
+            throw  new Exception('Invalid parameter specified for month.');
+        }
         $this->yearMonth = $yearMonth;
-        $this->dataDir = DATA_DIR . DIRECTORY_SEPARATOR . $yearMonth;
+
+        if (!file_exists($dir)) {
+            throw  new Exception('Invalid parameter specified for directory.');
+        }
+        $this->dataDir = $dir . DIRECTORY_SEPARATOR . $yearMonth;
     }
 
     /**
@@ -41,13 +53,14 @@ class ZipDataConverter
     public function runConversion()
     {
         $this->processKenAll();
+        $this->processBizAll();
+        $this->copyMasters();
+
         $this->processDelete();
         $this->processAdd();
-        $this->processBizAll();
         $this->processBizDelete();
         $this->processBizAdd();
 
-        $this->copyMasters();
         $this->mergeUpdates();
     }
 
@@ -59,7 +72,7 @@ class ZipDataConverter
         $zipDataAll = new ZipData($this->dataDir, 'KEN_ALL');
         if ($zipDataAll->processData(false, 'all')) {
             $zipDataAll->updateKanaDic();
-            $this->masterSqlFiles = array_merge($this->masterSqlFiles, $zipDataAll->getSqlFileNames());
+            $this->masterSqlFilePaths = array_merge($this->masterSqlFilePaths, $zipDataAll->getSqlFileNames());
         }
     }
 
@@ -94,7 +107,7 @@ class ZipDataConverter
     {
         $zipBizDataAll = new ZipBizData($this->dataDir, 'JIGYOSYO');
         if ($zipBizDataAll->processData(true, 'all')) {
-            $this->masterSqlFiles = array_merge($this->masterSqlFiles, $zipBizDataAll->getSqlFileNames());
+            $this->masterSqlFilePaths = array_merge($this->masterSqlFilePaths, $zipBizDataAll->getSqlFileNames());
         }
     }
 
@@ -125,12 +138,12 @@ class ZipDataConverter
      */
     private function copyMasters()
     {
-        if (count($this->masterSqlFiles) > 0) {
+        if (count($this->masterSqlFilePaths) > 0) {
             echo "Master SQL file ... copying ... ";
             $masterDir = MASTERS_DIR . DIRECTORY_SEPARATOR . $this->yearMonth;
             self::makeReadyDir($masterDir, "master directory");
             $no = 1;
-            foreach ($this->masterSqlFiles as $src) {
+            foreach ($this->masterSqlFilePaths as $src) {
                 $srcPath = $this->dataDir . DIRECTORY_SEPARATOR . WORK_SUB_DIR . DIRECTORY_SEPARATOR . $src;
                 $dstPath = $masterDir . DIRECTORY_SEPARATOR . sprintf('%02d-', $no) . $src;
                 if (!copy($srcPath, $dstPath)) {
