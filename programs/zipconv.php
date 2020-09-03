@@ -78,33 +78,6 @@ if (isset($argv[2])) {
     $yearMonth = $ym;
 }
 
-// INSERT 文の行数
-const LINES_PER_SQL = 40;
-
-// 1 SQL ファイルあたりの行数 ... アップロード可能なファイル・サイズに合わせて調節
-// 31000 ... 約 7 MB - 7.5 MB
-const LINES_PER_SQL_FILE = 20000;
-
-// ベースになるデータ・ディレクトリ
-define('DATA_DIR', ".." . DIRECTORY_SEPARATOR . "data");
-
-// データ・ディレクトリの中のワーク・ディレクトリ
-define('WORK_SUB_DIR', "work");
-
-// フリカナ辞書のディレクトリ
-define('KANA_DIC_DIR', ".." . DIRECTORY_SEPARATOR . "kana_dics");
-
-// 最終データ出力ディレクトリ
-define('OUTPUTS_DIR', ".." . DIRECTORY_SEPARATOR . "outputs");
-
-// マスター・データ・ディレクトリ
-define('MASTERS_DIR', OUTPUTS_DIR . DIRECTORY_SEPARATOR . "masters");
-
-// 更新データ・ディレクトリ
-define('UPDATES_DIR', OUTPUTS_DIR . DIRECTORY_SEPARATOR . "updates");
-
-define('SQLS_DIR', ".." . DIRECTORY_SEPARATOR . "sqls");
-
 // データ・ダウンローダ・クラス
 require_once('ZipDataDownloader.php');
 // データ変換機能クラス
@@ -118,8 +91,15 @@ require_once('ZipData.php');
 // 大口事業所個別番号データ
 require_once('ZipBizData.php');
 
-$downLoader = new ZipDataDownloader($yearMonth, $downloadMode);
-$downLoader->download();
+try {
+    $downLoader = new ZipDataDownloader($yearMonth, $downloadMode);
+    $downLoader->download();
 
-$converter = new ZipDataConverter($yearMonth);
-$converter->runConversion();
+    $converter = new ZipDataConverter($yearMonth);
+    $converter->runConversion();
+
+    echo "\nCompleted.\n";
+} catch (Exception $e) {
+    fprintf(STDERR, "\n\n");
+    fprintf(STDERR, $e->getMessage());
+}

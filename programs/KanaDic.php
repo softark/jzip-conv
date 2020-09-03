@@ -40,17 +40,9 @@ class KanaDic
     /**
      * コンストラクタ
      */
-    public function __construct($_kanaDicDir = null)
+    public function __construct()
     {
-        if (isset($_kanaDicDir)) {
-            $this->kanaDicDir = $_kanaDicDir;
-        } else {
-            if (defined('KANA_DIC_DIR')) {
-                $this->kanaDicDir = KANA_DIC_DIR;
-            } else {
-                $this->kanaDicDir = '.' . DIRECTORY_SEPARATOR;
-            }
-        }
+        $this->kanaDicDir = dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'kana_dics';
         $this->prefDic = $this->readKanaDic('pref');
         $this->townDic = $this->readKanaDic('town');
         $this->blockDic = $this->readKanaDic('block');
@@ -196,8 +188,7 @@ class KanaDic
             }
             fclose($dicFile);
         } else {
-            fputs(STDERR, "Failed to write kana dictionary [$fileName]\n");
-            exit(-1);
+            throw new Exception("Failed to write kana dictionary [$fileName]");
         }
     }
 }

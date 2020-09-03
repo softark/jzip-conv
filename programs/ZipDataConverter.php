@@ -11,27 +11,42 @@ class ZipDataConverter
     private $yearMonth;
 
     /**
-     * @var string データ・ディレクトリ
+     * @var string インプット・ディレクトリ
      */
-    private $dataDir;
+    private $inputDir;
 
     /**
-     * @var array マスター SQL ファイル名
+     * @var string マスター用アウトプット・ディレクトリ
      */
-    private $masterSqlFilePaths = array();
+    private $outputDirForMaster;
+
+    /**
+     * @var string 更新用アウトプット・ディレクトリ
+     */
+    private $outputDirForUpdate;
+
+    /**
+     * @var string SQL ディレクトリ
+     */
+    private $sqls_dir;
+
+    /**
+     * @var array マスター SQL ファイル
+     */
+    private $masterSqlFiles = [];
 
     /**
      * @var array 更新用 SQL ファイル名
      */
-    private $updateSqlFilePaths = array();
+    private $updateSqlFilePaths = [];
 
     /**
      * コンストラクタ
      * @param string $yearMonth 年月
-     * @param string $dir データ・ディレクトリ
      */
-    public function __construct($yearMonth, $dir)
+    public function __construct($yearMonth)
     {
+        // 年月の設定
         if (!preg_match('/(\d\d)([01]\d)/', $yearMonth, $matches)) {
             throw  new Exception('Invalid parameter specified for year and month.');
         }
@@ -41,10 +56,17 @@ class ZipDataConverter
         }
         $this->yearMonth = $yearMonth;
 
-        if (!file_exists($dir)) {
-            throw  new Exception('Invalid parameter specified for directory.');
-        }
-        $this->dataDir = $dir . DIRECTORY_SEPARATOR . $yearMonth;
+        $baseDir = dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
+
+        // インプット・ディレクトリの設定
+        $this->inputDir = $baseDir . 'data' . DIRECTORY_SEPARATOR . $yearMonth;
+
+        // アウトプット・ディレクトリの設定
+        $this->outputDirForMaster = $baseDir . 'outputs' . DIRECTORY_SEPARATOR . 'masters' . DIRECTORY_SEPARATOR . $yearMonth;
+        $this->outputDirForUpdate = $baseDir . 'outputs' . DIRECTORY_SEPARATOR . 'updates';
+
+        // SQL ディレクトリ
+        $this->sqls_dir = $baseDir . 'sqls';
     }
 
     /**
@@ -52,15 +74,16 @@ class ZipDataConverter
      */
     public function runConversion()
     {
+        // ALL
         $this->processKenAll();
         $this->processBizAll();
         $this->copyMasters();
 
+        // DIFF
         $this->processDelete();
         $this->processAdd();
         $this->processBizDelete();
         $this->processBizAdd();
-
         $this->mergeUpdates();
     }
 
@@ -69,10 +92,10 @@ class ZipDataConverter
      */
     private function processKenAll()
     {
-        $zipDataAll = new ZipData($this->dataDir, 'KEN_ALL');
+        $zipDataAll = new ZipData($this->inputDir, ZipDataCommon::KEN_ALL_DATA);
         if ($zipDataAll->processData(false, 'all')) {
             $zipDataAll->updateKanaDic();
-            $this->masterSqlFilePaths = array_merge($this->masterSqlFilePaths, $zipDataAll->getSqlFileNames());
+            $this->masterSqlFiles = array_merge($this->masterSqlFiles, $zipDataAll->getSqlFileNames());
         }
     }
 
@@ -81,7 +104,7 @@ class ZipDataConverter
      */
     private function processDelete()
     {
-        $zipDataDelete = new ZipData($this->dataDir, 'DEL_' . $this->yearMonth);
+        $zipDataDelete = new ZipData($this->inputDir, ZipDataCommon::DEL_DATA_PREFIX . $this->yearMonth);
         if ($zipDataDelete->processData(false, 'del')) {
             $zipDataDelete->updateKanaDic();
             $this->updateSqlFilePaths = array_merge($this->updateSqlFilePaths, $zipDataDelete->getSqlFilePaths());
@@ -93,7 +116,7 @@ class ZipDataConverter
      */
     private function processAdd()
     {
-        $zipDataAdd = new ZipData($this->dataDir, 'ADD_' . $this->yearMonth);
+        $zipDataAdd = new ZipData($this->inputDir, ZipDataCommon::ADD_DATA_PREFIX . $this->yearMonth);
         if ($zipDataAdd->processData(false, 'add')) {
             $zipDataAdd->updateKanaDic();
             $this->updateSqlFilePaths = array_merge($this->updateSqlFilePaths, $zipDataAdd->getSqlFilePaths());
@@ -105,9 +128,9 @@ class ZipDataConverter
      */
     private function processBizAll()
     {
-        $zipBizDataAll = new ZipBizData($this->dataDir, 'JIGYOSYO');
+        $zipBizDataAll = new ZipBizData($this->inputDir, ZipDataCommon::JG_ALL_DATA);
         if ($zipBizDataAll->processData(true, 'all')) {
-            $this->masterSqlFilePaths = array_merge($this->masterSqlFilePaths, $zipBizDataAll->getSqlFileNames());
+            $this->masterSqlFiles = array_merge($this->masterSqlFiles, $zipBizDataAll->getSqlFileNames());
         }
     }
 
@@ -116,7 +139,7 @@ class ZipDataConverter
      */
     private function processBizDelete()
     {
-        $zipBizDataDelete = new ZipBizData($this->dataDir, 'JDEL' . $this->yearMonth);
+        $zipBizDataDelete = new ZipBizData($this->inputDir, ZipDataCommon::JG_DEL_DATA_PREFIX . $this->yearMonth);
         if ($zipBizDataDelete->processData(true, 'del')) {
             $this->updateSqlFilePaths = array_merge($this->updateSqlFilePaths, $zipBizDataDelete->getSqlFilePaths());
         }
@@ -127,7 +150,7 @@ class ZipDataConverter
      */
     private function processBizAdd()
     {
-        $zipBizDataAdd = new ZipBizData($this->dataDir, 'JADD' . $this->yearMonth);
+        $zipBizDataAdd = new ZipBizData($this->inputDir, ZipDataCommon::JG_ADD_DATA_PREFIX . $this->yearMonth);
         if ($zipBizDataAdd->processData(true, 'add')) {
             $this->updateSqlFilePaths = array_merge($this->updateSqlFilePaths, $zipBizDataAdd->getSqlFilePaths());
         }
@@ -138,22 +161,18 @@ class ZipDataConverter
      */
     private function copyMasters()
     {
-        if (count($this->masterSqlFilePaths) > 0) {
-            echo "Master SQL file ... copying ... ";
-            $masterDir = MASTERS_DIR . DIRECTORY_SEPARATOR . $this->yearMonth;
-            self::makeReadyDir($masterDir, "master directory");
+        if (count($this->masterSqlFiles) > 0) {
+            echo "Master SQL files ... copying ... ";
+            self::makeReadyDir($this->outputDirForMaster, "master directory");
             $no = 1;
-            foreach ($this->masterSqlFilePaths as $src) {
-                $srcPath = $this->dataDir . DIRECTORY_SEPARATOR . WORK_SUB_DIR . DIRECTORY_SEPARATOR . $src;
-                $dstPath = $masterDir . DIRECTORY_SEPARATOR . sprintf('%02d-', $no) . $src;
+            foreach ($this->masterSqlFiles as $src) {
+                $srcPath = $this->inputDir . DIRECTORY_SEPARATOR . 'work' . DIRECTORY_SEPARATOR . $src;
+                $dstPath = $this->outputDirForMaster . DIRECTORY_SEPARATOR . sprintf('%02d-', $no) . $src;
                 if (!copy($srcPath, $dstPath)) {
-                    echo "\n";
-                    fputs(STDERR, "Failed to copy a file [$srcPath] to [$dstPath]\n");
-                    exit(-1);
+                    throw new Exception("Failed to copy a file [$srcPath] to [$dstPath]");
                 }
                 if ($no == 1) {
                     $this->prependDataInit($dstPath);
-                    $prependDone = true;
                 }
                 $no++;
             }
@@ -164,13 +183,16 @@ class ZipDataConverter
         }
     }
 
+    /**
+     * @param $dir string ディレクトリ
+     * @param $dirName string ディレクトリの説明
+     * ディレクトリを準備する
+     */
     public static function makeReadyDir($dir, $dirName)
     {
         if (!file_exists($dir)) {
             if (!mkdir($dir)) {
-                echo "\n";
-                fputs(STDERR, "Failed to make the $dirName [$dir]\n");
-                exit(-1);
+                throw new Exception("Failed to make the $dirName [$dir]");
             }
         }
     }
@@ -182,20 +204,16 @@ class ZipDataConverter
     {
         if (count($this->updateSqlFilePaths) > 0) {
             echo "Single SQL file for updating ... creating ... ";
-            $dstFileName = UPDATES_DIR . DIRECTORY_SEPARATOR . "update_" . $this->yearMonth . ".sql";
+            $dstFileName = $this->outputDirForUpdate  . DIRECTORY_SEPARATOR . "update_" . $this->yearMonth . ".sql";
             if (file_exists($dstFileName)) {
                 if (!unlink($dstFileName)) {
-                    echo "\n";
-                    fputs(STDERR, "Failed to unlink the master updating file [$dstFileName]\n");
-                    exit(-1);
+                    throw new Exception("Failed to unlink the master updating file [$dstFileName]");
                 }
             }
 
             foreach ($this->updateSqlFilePaths as $src) {
                 if (file_put_contents($dstFileName, file_get_contents($src), FILE_APPEND) === false) {
-                    echo "\n";
-                    fputs(STDERR, "Failed to create the single SQL file for updating [$dstFileName]\n");
-                    exit(-1);
+                    throw new Exception("Failed to create the single SQL file for updating [$dstFileName]");
                 }
             }
             $this->appendFlagUpdate($dstFileName);
@@ -211,13 +229,11 @@ class ZipDataConverter
      */
     private function prependDataInit($dstFile)
     {
-        $srcFile = SQLS_DIR . DIRECTORY_SEPARATOR . "zip_data_init.sql";
+        $srcFile = $this->sqls_dir . DIRECTORY_SEPARATOR . "zip_data_init.sql";
         $prepend = file_get_contents($srcFile);
         $contents = file_get_contents($dstFile);
         if (file_put_contents($dstFile, $prepend . "\n" . $contents) === false) {
-            echo "\n";
-            fputs(STDERR, "Failed to prepend the initializing SQL [$dstFile]\n");
-            exit(-1);
+            throw new Exception("Failed to prepend the initializing SQL [$dstFile]");
         }
     }
 
@@ -227,11 +243,9 @@ class ZipDataConverter
      */
     private function appendFlagUpdate($dstFile)
     {
-        $srcFile = SQLS_DIR . DIRECTORY_SEPARATOR . "zip_data_flag_update.sql";
+        $srcFile = $this->sqls_dir . DIRECTORY_SEPARATOR . "zip_data_flag_update.sql";
         if (file_put_contents($dstFile, file_get_contents($srcFile), FILE_APPEND) === false) {
-            echo "\n";
-            fputs(STDERR, "Failed to append the flag updating SQLs [$dstFile]\n");
-            exit(-1);
+            throw new Exception("Failed to append the flag updating SQLs [$dstFile]");
         }
     }
 

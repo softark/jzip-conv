@@ -9,17 +9,11 @@ class ZipDataDownloader
      * 郵便番号データ
      */
     const SOURCE_URL = 'http://www.post.japanpost.jp/zipcode/dl/kogaki/zip/';
-    const KEN_ALL_DATA = 'ken_all';
-    const ADD_DATA_PREFIX = 'add_';
-    const DEL_DATA_PREFIX = 'del_';
 
     /**
      * 個別事業所データ
      */
     const JG_SOURCE_URL = 'http://www.post.japanpost.jp/zipcode/dl/jigyosyo/zip/';
-    const JG_ALL_DATA = 'jigyosyo';
-    const JG_ADD_DATA_PREFIX = 'jadd';
-    const JG_DEL_DATA_PREFIX = 'jdel';
 
     /**
      * ファイル拡張子
@@ -45,18 +39,18 @@ class ZipDataDownloader
     private $mode;
 
     /**
-     * @var string データ・ディレクトリ
+     * @var string ダウンロード・ディレクトリ
      */
-    private $dataDir;
+    private $downloadDir;
 
     /**
      * コンストラクタ
      * @param string $yearMonth 年月
      * @param string $mode ダウンロード・モード
-     * @param string $dir データ・ディレクトリ
      */
-    public function __construct($yearMonth, $mode, $dir)
+    public function __construct($yearMonth, $mode)
     {
+        // 年月の設定
         if (!preg_match('/(\d\d)([01]\d)/', $yearMonth, $matches)) {
             throw  new Exception('Invalid parameter specified for year and month.');
         }
@@ -66,15 +60,15 @@ class ZipDataDownloader
         }
         $this->yearMonth = $yearMonth;
 
+        // ダウンロード・モードの設定
         if ($mode != self::DOWNLOAD_DIFF && $mode != self::DOWNLOAD_ALL && $mode != self::DOWNLOAD_BOTH) {
-            throw  new Exception('Invalid parameter specified for mode.');
+            throw  new Exception('Invalid parameter specified for download mode.');
         }
         $this->mode = $mode;
 
-        if (!file_exists($dir)) {
-            throw  new Exception('Invalid parameter specified for directory.');
-        }
-        $this->dataDir = $dir . DIRECTORY_SEPARATOR . $yearMonth;
+        // ダウンロード・ディレクトリの設定
+        $baseDir = dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
+        $this->downloadDir = $baseDir . 'data' . DIRECTORY_SEPARATOR . $yearMonth;
     }
 
     /**
@@ -85,14 +79,14 @@ class ZipDataDownloader
         echo "Downloading data files ...\n";
         $this->prepareDataDir();
         if ($this->mode == self::DOWNLOAD_DIFF || $this->mode == self::DOWNLOAD_BOTH) {
-            $this->downloadDataFile(self::SOURCE_URL, self::ADD_DATA_PREFIX . $this->yearMonth);
-            $this->downloadDataFile(self::SOURCE_URL, self::DEL_DATA_PREFIX . $this->yearMonth);
-            $this->downloadDataFile(self::JG_SOURCE_URL, self::JG_ADD_DATA_PREFIX . $this->yearMonth);
-            $this->downloadDataFile(self::JG_SOURCE_URL, self::JG_DEL_DATA_PREFIX . $this->yearMonth);
+            $this->downloadDataFile(self::SOURCE_URL, ZipDataCommon::ADD_DATA_PREFIX . $this->yearMonth);
+            $this->downloadDataFile(self::SOURCE_URL, ZipDataCommon::DEL_DATA_PREFIX . $this->yearMonth);
+            $this->downloadDataFile(self::JG_SOURCE_URL, ZipDataCommon::JG_ADD_DATA_PREFIX . $this->yearMonth);
+            $this->downloadDataFile(self::JG_SOURCE_URL, ZipDataCommon::JG_DEL_DATA_PREFIX . $this->yearMonth);
         }
         if ($this->mode === self::DOWNLOAD_ALL || $this->mode === self::DOWNLOAD_BOTH) {
-            $this->downloadDataFile(self::SOURCE_URL, self::KEN_ALL_DATA);
-            $this->downloadDataFile(self::JG_SOURCE_URL, self::JG_ALL_DATA);
+            $this->downloadDataFile(self::SOURCE_URL, ZipDataCommon::KEN_ALL_DATA);
+            $this->downloadDataFile(self::JG_SOURCE_URL, ZipDataCommon::JG_ALL_DATA);
         }
         echo "done.\n\n";
     }
@@ -102,9 +96,9 @@ class ZipDataDownloader
      */
     private function prepareDataDir()
     {
-        if (!file_exists($this->dataDir)) {
-            if (!mkdir($this->dataDir)) {
-                throw  new Exception("Failed to make the data directory [{$this->dataDir}]");
+        if (!file_exists($this->downloadDir)) {
+            if (!mkdir($this->downloadDir)) {
+                throw  new Exception("Failed to make the data directory [{$this->downloadDir}]");
             }
         }
     }
@@ -117,8 +111,8 @@ class ZipDataDownloader
     private function downloadDataFile($srcUrl, $file)
     {
         $fileName = $file . self::FILE_EXT;
-        $filePath = $this->dataDir . DIRECTORY_SEPARATOR . $fileName;
-        echo "$file : downloading ... ";
+        $filePath = $this->downloadDir . DIRECTORY_SEPARATOR . $fileName;
+        echo "$file : downloading [$fileName] ... ";
         if (!copy($srcUrl . $fileName, $filePath)) {
             throw new Exception("Failed to download the data file [$fileName]");
         }
@@ -128,10 +122,10 @@ class ZipDataDownloader
         if (!$za->open($filePath)) {
             throw new Exception("Failed to extract the data file [$fileName]");
         }
-        $za->extractTo($this->dataDir);
+        $za->extractTo($this->downloadDir);
         $za->close();
 
-        @unlink($this->dataDir . DIRECTORY_SEPARATOR . $fileName);
+        @unlink($this->downloadDir . DIRECTORY_SEPARATOR . $fileName);
         echo "done.\n";
     }
 

@@ -75,7 +75,7 @@ class ZipBizData extends ZipDataCommon
 
     /**
      * コンストラクタ
-     * @param string $dataDir ワーク・ディレクトリ
+     * @param string $dataDir データ・ディレクトリ
      * @param string $dataName データ名 (拡張子を除いたソース CSV ファイル名)
      */
     public function __construct($dataDir, $dataName)

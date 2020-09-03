@@ -6,6 +6,43 @@
 class ZipDataCommon
 {
     /**
+     * 郵便番号データ
+     */
+    const KEN_ALL_DATA = 'ken_all';
+    const ADD_DATA_PREFIX = 'add_';
+    const DEL_DATA_PREFIX = 'del_';
+
+    /**
+     * 個別事業所データ
+     */
+    const JG_ALL_DATA = 'jigyosyo';
+    const JG_ADD_DATA_PREFIX = 'jadd';
+    const JG_DEL_DATA_PREFIX = 'jdel';
+
+    /**
+     * 動作モード
+     */
+    const MODE_ALL = 'all';
+    const MODE_DEL = 'del';
+    const MODE_ADD = 'add';
+
+    /**
+     * ワーク・ディレクトリ
+     */
+    const WORK_DIR = 'work';
+
+    /**
+     * INSERT 文の行数
+     */
+    const LINES_PER_SQL = 40;
+
+    /**
+     * 1 SQL ファイルあたりの行数 ... アップロード可能なファイル・サイズに合わせて調節
+     * 31000 ... 約 7 MB - 7.5 MB
+     */
+    const LINES_PER_SQL_FILE = 20000;
+
+    /**
      * @var string データ・ディレクトリ
      */
     private $_dataDir = '';
@@ -54,7 +91,7 @@ class ZipDataCommon
 
     /**
      * コンストラクタ
-     * @param string $dataDir ワーク・ディレクトリ
+     * @param string $dataDir データ・ディレクトリ
      * @param string $dataName データ名 (拡張子を除いたソース CSV ファイル名)
      */
     public function __construct($dataDir, $dataName)
@@ -68,7 +105,7 @@ class ZipDataCommon
      */
     protected function getRawCsvFileName()
     {
-        return $this->getDataName() . '.CSV';
+        return strtoupper($this->getDataName() . '.CSV');
     }
 
     /**
@@ -101,7 +138,7 @@ class ZipDataCommon
     protected function getCookedCsvFilePath()
     {
         $this->makeReadyWorkDir();
-        return $this->getDataDir() . DIRECTORY_SEPARATOR . WORK_SUB_DIR . DIRECTORY_SEPARATOR . $this->getCookedCsvFileName();
+        return $this->getDataDir() . DIRECTORY_SEPARATOR . self::WORK_DIR . DIRECTORY_SEPARATOR . $this->getCookedCsvFileName();
     }
 
     /**
@@ -120,7 +157,7 @@ class ZipDataCommon
     public function getSqlFilePath($fileNo)
     {
         $this->makeReadyWorkDir();
-        return $this->getDataDir() . DIRECTORY_SEPARATOR . WORK_SUB_DIR . DIRECTORY_SEPARATOR . $this->getSqlFileName($fileNo);
+        return $this->getDataDir() . DIRECTORY_SEPARATOR . self::WORK_DIR . DIRECTORY_SEPARATOR . $this->getSqlFileName($fileNo);
     }
 
     /**
@@ -171,10 +208,15 @@ class ZipDataCommon
      */
     private function makeReadyWorkDir()
     {
-        $workDir = $this->getDataDir() . DIRECTORY_SEPARATOR . WORK_SUB_DIR;
+        $workDir = $this->getDataDir() . DIRECTORY_SEPARATOR . self::WORK_DIR;
         ZipDataConverter::makeReadyDir($workDir, "working directory");
     }
 
+    /**
+     * @param $biz boolean 事業所データなら true
+     * @param $mode string 動作モード : self::MODE_ALL, self::MODE_DEL or self::MODE_ADD
+     * @return bool
+     */
     public function processData($biz, $mode)
     {
         $data = $biz ? 'Biz zip data' : 'Zip data';
@@ -182,7 +224,7 @@ class ZipDataCommon
             echo "$data ($mode) ... converting ...\n";
             echo "\n";
             $this->normalizeCsvData();
-            if ($mode === 'all' || $mode === 'add') {
+            if ($mode === self::MODE_ADD || $mode === self::MODE_ALL) {
                 $this->createInsertSqlFiles();
             } else {
                 $this->createDeleteSqlFiles();
@@ -206,14 +248,14 @@ class ZipDataCommon
         echo "from [{$this->getRawCsvFilePath()}] ";
         echo "to [{$this->getCookedCsvFilePath()}] ... ";
 
-        /** @var $srcFile object 変換元 CSV ファイル */
+        /** @var $srcFile resource 変換元 CSV ファイル */
         $srcFile = fopen($this->getRawCsvFilePath(), 'r');
         if (!$srcFile) {
             echo "\n";
             echo "Failed to open the source CSV file.\n";
             return;
         }
-        /** @var $srcFile object 変換先 CSV ファイル */
+        /** @var $dstFile resource 変換先 CSV ファイル */
         $dstFile = fopen($this->getCookedCsvFilePath(), 'w');
         if (!$dstFile) {
             echo "\n";
@@ -321,14 +363,14 @@ class ZipDataCommon
             $data = explode(',', trim($line));
             $sqlLine = $this->getInsSqlValue($data);
             if ($sqlCount > 0) {
-                if ($sqlCount < LINES_PER_SQL) {
+                if ($sqlCount < self::LINES_PER_SQL) {
                     fwrite($dstFile, ",\n");
                 } else {
                     fwrite($dstFile, ";\n");
                     $sqlCount = 0;
                 }
             }
-            if ($lineCount >= LINES_PER_SQL_FILE) {
+            if ($lineCount >= self::LINES_PER_SQL_FILE) {
                 fclose($dstFile);
                 echo "done. \n";
                 $lineCount = 0;
@@ -395,7 +437,7 @@ class ZipDataCommon
         while ($line = fgets($srcFile)) {
             $data = explode(',', trim($line));
             $sqlLine = $this->getDelSql($data);
-            if ($lineCount >= LINES_PER_SQL_FILE) {
+            if ($lineCount >= self::LINES_PER_SQL_FILE) {
                 fclose($dstFile);
                 echo "done. \n";
                 $lineCount = 0;
