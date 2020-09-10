@@ -128,8 +128,8 @@ programs/zipup.sh は linux 環境でデータベースを月次更新するス�
 
 ここで作成した MySQL の郵便番号データ・テーブルの使用例として、以下のものを挙げる。
 
-+ [郵便番号案内@softark.net] (http://tools.softark.net/zipdata)
-+ [郵便番号検索サービス@softark.net] (http://tools.softark.net/zipdata/api)
++ [郵便番号案内@softark.net] (https://tools.softark.net/zipdata)
++ [郵便番号検索サービス@softark.net] (https://tools.softark.net/zipdata/api)
 
 リンク
 ------
