@@ -26,12 +26,12 @@ select
     and `t1`.`zip_code` = `t3`.`zip_code`
 	and (`t1`.`pref` <> `t3`.`pref` or  `t1`.`town` <> `t3`.`town` or `t1`.`block` <> `t3`.`block`)
 	)
-from `zip_data` `t1`
-;
+from `zip_data` `t1`;
 
 update `zip_data` `dst`, `zip_data_temp` `temp`
 set
 	`dst`.`m_zips` = if (`temp`.`m_zip_count` > 0, 1, 0),
 	`dst`.`m_blocks` = if (`temp`.`m_block_count` > 0, 1, 0)
-where `dst`.`id` = `temp`.`id`
-;
+where `dst`.`id` = `temp`.`id`;
+
+optimize table `zip_data`;
