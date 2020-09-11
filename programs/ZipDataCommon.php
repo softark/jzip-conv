@@ -228,10 +228,11 @@ class ZipDataCommon
             echo "$data ($mode) ... converting ...\n";
             echo "\n";
             $this->normalizeCsvData();
+            $maxlines = $biz ? self::LINES_PER_SQL_FILE_BIZ : self::LINES_PER_SQL_FILE;
             if ($mode === self::MODE_ADD || $mode === self::MODE_ALL) {
-                $this->createInsertSqlFiles($biz);
+                $this->createInsertSqlFiles($maxlines);
             } else {
-                $this->createDeleteSqlFiles($biz);
+                $this->createDeleteSqlFiles($maxlines);
             }
             echo "$data ($mode) ... conversion completed.\n";
             echo "\n";
@@ -314,14 +315,6 @@ class ZipDataCommon
     }
 
     /**
-     *
-     */
-    protected function showMaxLengths()
-    {
-
-    }
-
-    /**
      * 文字列の長さを既存の最大値と比べて、最大値を更新する
      * @param array $srcData
      * @param array $maxLenData
@@ -337,14 +330,12 @@ class ZipDataCommon
     }
 
     /**
-     * @param boolean $biz
+     * @param integer $maxlines
      * INSERT SQL ファイルの作成
      */
-    public function createInsertSqlFiles($biz)
+    public function createInsertSqlFiles($maxlines)
     {
         echo "Writing the INSERT SQL file ...\n";
-
-        $max_lines = $biz ? self::LINES_PER_SQL_FILE_BIZ : self::LINES_PER_SQL_FILE;
 
         // 既存の同名ファイルを削除
         $this->deleteExistingSqlFiles();
@@ -377,7 +368,7 @@ class ZipDataCommon
                     $sqlCount = 0;
                 }
             }
-            if ($lineCount >= $max_lines) {
+            if ($maxlines > 0 && $lineCount >= $maxlines) {
                 fclose($dstFile);
                 echo "done. \n";
                 $lineCount = 0;
@@ -416,14 +407,12 @@ class ZipDataCommon
     }
 
     /**
-     * @param boolean $biz
+     * @param integer $maxlines
      * DELETE SQL ファイルの作成
      */
-    public function createDeleteSqlFiles($biz)
+    public function createDeleteSqlFiles($maxlines)
     {
         echo "Writing the DELETE SQL file ...\n";
-
-        $max_lines = $biz ? self::LINES_PER_SQL_FILE_BIZ : self::LINES_PER_SQL_FILE;
 
         // 既存の同名ファイルを削除
         $this->deleteExistingSqlFiles();
@@ -447,7 +436,7 @@ class ZipDataCommon
         while ($line = fgets($srcFile)) {
             $data = explode(',', trim($line));
             $sqlLine = $this->getDelSql($data);
-            if ($lineCount >= $max_lines) {
+            if ($maxlines > 0 && $lineCount >= $maxlines) {
                 fclose($dstFile);
                 echo "done. \n";
                 $lineCount = 0;

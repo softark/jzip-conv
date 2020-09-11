@@ -45,14 +45,14 @@ if ($d < 25) {
 $yearMonth = sprintf('%02d%02d', $y, $m);
 
 
-/** @var $downloadMode string ダウンロード・モード */
+/** @var $operationMode string 操作モード */
 // 引数省略時は "diff"
-$downloadMode = 'diff';
+$operationMode = 'diff';
 
-// 引数からダウンロード・モードを取得
+// 引数から操作モードを取得
 if (isset($argv[1])) {
-    $downloadMode = $argv[1];
-    if ($downloadMode !== 'diff' && $downloadMode !== 'all' && $downloadMode !== 'both') {
+    $operationMode = $argv[1];
+    if ($operationMode !== 'diff' && $operationMode !== 'all' && $operationMode !== 'both') {
         showSyntaxError();
         exit(-1);
     }
@@ -92,10 +92,10 @@ require_once('ZipData.php');
 require_once('ZipBizData.php');
 
 try {
-    $downLoader = new ZipDataDownloader($yearMonth, $downloadMode);
+    $downLoader = new ZipDataDownloader($yearMonth, $operationMode);
     $downLoader->download();
 
-    $converter = new ZipDataConverter($yearMonth);
+    $converter = new ZipDataConverter($yearMonth, $operationMode);
     $converter->runConversion();
 
     echo "\nCompleted.\n";

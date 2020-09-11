@@ -6,6 +6,11 @@
 class ZipDataConverter
 {
     /**
+     * @var string  操作モード
+     */
+    private $operationMode;
+
+    /**
      * @var string  対象の年月
      */
     private $yearMonth;
@@ -43,8 +48,9 @@ class ZipDataConverter
     /**
      * コンストラクタ
      * @param string $yearMonth 年月
+     * @param string $operationMode 操作モード
      */
-    public function __construct($yearMonth)
+    public function __construct($yearMonth, $operationMode)
     {
         // 年月の設定
         if (!preg_match('/(\d\d)([01]\d)/', $yearMonth, $matches)) {
@@ -67,6 +73,9 @@ class ZipDataConverter
 
         // SQL ディレクトリ
         $this->sqls_dir = $baseDir . 'sqls';
+
+        // 操作モード
+        $this->operationMode = $operationMode;
     }
 
     /**
@@ -75,16 +84,20 @@ class ZipDataConverter
     public function runConversion()
     {
         // ALL
-        $this->processKenAll();
-        $this->processBizAll();
-        $this->copyMasters();
+        if ($this->operationMode == ZipDataDownloader::DOWNLOAD_ALL || $this->operationMode == ZipDataDownloader::DOWNLOAD_BOTH) {
+            $this->processKenAll();
+            $this->processBizAll();
+            $this->copyMasters();
+        }
 
         // DIFF
-        $this->processDelete();
-        $this->processAdd();
-        $this->processBizDelete();
-        $this->processBizAdd();
-        $this->mergeUpdates();
+        if ($this->operationMode == ZipDataDownloader::DOWNLOAD_DIFF || $this->operationMode == ZipDataDownloader::DOWNLOAD_BOTH) {
+            $this->processDelete();
+            $this->processAdd();
+            $this->processBizDelete();
+            $this->processBizAdd();
+            $this->mergeUpdates();
+        }
     }
 
     /**
@@ -178,6 +191,27 @@ class ZipDataConverter
             }
             $this->appendFlagUpdate($dstPath);
             $this->appendHist($dstPath);
+            echo "done.\n";
+            echo "\n";
+
+            // 単一のファイルを作成する
+            echo "Single Master SQL file ... creating ... ";
+            $dstFileName = $this->outputDirForMaster . DIRECTORY_SEPARATOR . '00-zipdata.sql';
+            if (file_exists($dstFileName)) {
+                if (!unlink($dstFileName)) {
+                    throw new Exception("Failed to unlink the single master file [$dstFileName]");
+                }
+            }
+
+            foreach ($this->masterSqlFiles as $src) {
+                $srcPath = $this->inputDir . DIRECTORY_SEPARATOR . 'work' . DIRECTORY_SEPARATOR . $src;
+                if (file_put_contents($dstFileName, file_get_contents($srcPath), FILE_APPEND) === false) {
+                    throw new Exception("Failed to create the single SQL file for updating [$dstFileName]");
+                }
+            }
+            $this->prependDataInit($dstFileName);
+            $this->appendFlagUpdate($dstFileName);
+            $this->appendHist($dstFileName);
             echo "done.\n";
             echo "\n";
         }
