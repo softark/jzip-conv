@@ -38,9 +38,13 @@ class ZipDataCommon
 
     /**
      * 1 SQL ファイルあたりの行数 ... アップロード可能なファイル・サイズに合わせて調節
-     * 31000 ... 約 7 MB - 7.5 MB
      */
-    const LINES_PER_SQL_FILE = 20000;
+    const LINES_PER_SQL_FILE = 22000;
+
+    /**
+     * 1 SQL ファイルあたりの行数（事業所）
+     */
+    const LINES_PER_SQL_FILE_BIZ = 13000;
 
     /**
      * @var string データ・ディレクトリ
@@ -225,9 +229,9 @@ class ZipDataCommon
             echo "\n";
             $this->normalizeCsvData();
             if ($mode === self::MODE_ADD || $mode === self::MODE_ALL) {
-                $this->createInsertSqlFiles();
+                $this->createInsertSqlFiles($biz);
             } else {
-                $this->createDeleteSqlFiles();
+                $this->createDeleteSqlFiles($biz);
             }
             echo "$data ($mode) ... conversion completed.\n";
             echo "\n";
@@ -333,11 +337,14 @@ class ZipDataCommon
     }
 
     /**
+     * @param boolean $biz
      * INSERT SQL ファイルの作成
      */
-    public function createInsertSqlFiles()
+    public function createInsertSqlFiles($biz)
     {
         echo "Writing the INSERT SQL file ...\n";
+
+        $max_lines = $biz ? self::LINES_PER_SQL_FILE_BIZ : self::LINES_PER_SQL_FILE;
 
         // 既存の同名ファイルを削除
         $this->deleteExistingSqlFiles();
@@ -370,7 +377,7 @@ class ZipDataCommon
                     $sqlCount = 0;
                 }
             }
-            if ($lineCount >= self::LINES_PER_SQL_FILE) {
+            if ($lineCount >= $max_lines) {
                 fclose($dstFile);
                 echo "done. \n";
                 $lineCount = 0;
@@ -409,11 +416,14 @@ class ZipDataCommon
     }
 
     /**
+     * @param boolean $biz
      * DELETE SQL ファイルの作成
      */
-    public function createDeleteSqlFiles()
+    public function createDeleteSqlFiles($biz)
     {
         echo "Writing the DELETE SQL file ...\n";
+
+        $max_lines = $biz ? self::LINES_PER_SQL_FILE_BIZ : self::LINES_PER_SQL_FILE;
 
         // 既存の同名ファイルを削除
         $this->deleteExistingSqlFiles();
@@ -437,7 +447,7 @@ class ZipDataCommon
         while ($line = fgets($srcFile)) {
             $data = explode(',', trim($line));
             $sqlLine = $this->getDelSql($data);
-            if ($lineCount >= self::LINES_PER_SQL_FILE) {
+            if ($lineCount >= $max_lines) {
                 fclose($dstFile);
                 echo "done. \n";
                 $lineCount = 0;
