@@ -64,7 +64,7 @@ MySQL のデータベースを作成(または保守)するための SQL ファ�
             + 2009               ... 2020年9月
             + YYMM               ... 一般に20YY年MM月
         + updates                ... 更新用 SQL
-            update_2008.sql      ... 2020年38
+            update_2008.sql      ... 2020年8月
             update_2009.sql      ... 2020年9月
             update_YYMM.sql      ... 一般に20YY年MM月
 
@@ -73,7 +73,7 @@ MySQL のデータベースを作成(または保守)するための SQL ファ�
 
 1. programs/zipconv.php を実行する
     + 引数に、ダウンロードモード "all" と年月 YYMM を指定する。
-      例えば、2016年12月なら、"php zipconv.php all 1612"
+      例えば、2020年12月なら、"php zipconv.php all 2012"
     + ただし、その月の25日以降かつ次の月の24日以前なら、年月 YYMM は省略可能。 "php zipconv.php all"
 2. outputs/masters/YYMM ディレクトリに生成されたマスター・データ `00-zipdata.sql` を DB にインポートする
     + リモートからファイルをアップロードする場合は、分割マスター・データを `01` から `08` まで番号順に DB にインポートする
@@ -84,7 +84,7 @@ MySQL のデータベースを作成(または保守)するための SQL ファ�
 
 1. programs/zipconv.php を実行する
     + 引数に、ダウンロードモード "diff" と年月 YYMM を指定する。
-      例えば、2016年12月なら、"php zipconv.php diff 1612"
+      例えば、2020年12月なら、"php zipconv.php diff 2012"
     + ただし、その月の25日以降かつ次の月の24日以前なら、年月 YYMM は省略可能であり、
       デフォルトのダウンロードモードである "diff" も省略してよい。 "php zipconv.php"
 2. outputs/updates ディレクトリに生成された update_YYMM.sql を DB にインポートする
@@ -138,4 +138,4 @@ programs/zipup.sh は linux 環境でデータベースを月次更新するス�
 
 + [ 郵便番号データは自分で加工しない](http://d.hatena.ne.jp/dayflower/20100929/1285744153)
 
-2011-05-01 初稿 / 2020-09-10 更新
+2011-05-01 初稿 / 2020-09-23 更新
